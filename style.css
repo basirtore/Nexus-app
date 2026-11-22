@@ -898,3 +898,13 @@ body.lg-end .lg-bg{opacity:0}
 .ses-bd{min-width:0}
 .ses-d{font-size:15px;font-weight:600;overflow-wrap:anywhere}
 .ses-w{margin-top:2px;color:var(--mute);font-size:13px}
+
+/* Davet linkleri: Aktif linkler başlığı + yenile düğmesi */
+.inv-hr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px}
+.inv-hr .inv-h{margin:0 4px}
+.lk-rf{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--mute);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background var(--dur) ease,color var(--dur) ease,transform var(--dur) var(--ease)}
+.lk-rf:active{transform:scale(.95);color:var(--text)}
+.lk-rf:disabled{opacity:.7;cursor:default}
+.lk-rf svg{flex:none;fill:none;stroke:currentColor}
+.lk-rf.spin svg{animation:lgSpin .8s linear infinite}
+@media (hover:hover){.lk-rf:hover{color:var(--text)}}

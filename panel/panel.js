@@ -197,6 +197,7 @@
   const IC_CHEV='<path d="M6 9l6 6 6-6"/>';
   const IC_PUSH='<circle cx="12" cy="12" r="3"/><path d="M3 12h6M15 12h6"/>';
   const IC_IMG='<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/>';
+  const IC_REFRESH='<path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4"/>';
   const IC_SND='<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>';
   const TITLES={'':'Nexus',uyg:'Uygulamalar',acik:'Herkese açık',davet:'Davet linkleri',durum:'Uygulama durumu',bilgi:'Bilgi'};
   let cur='',drFrom=null;
@@ -349,7 +350,9 @@
   +'<button class="btn btn-pri btn-lg" type="submit">Link oluştur</button>'
   +'</form>'
   +'<div id="admR" class="adm-res"></div>'
-  +'<h3 class="inv-h">Aktif linkler</h3><div id="admL" class="inv-list"></div></section>'
+  +'<div class="inv-hr"><h3 class="inv-h">Aktif linkler</h3>'
+  +'<button class="lk-rf" type="button" data-adm="rf" aria-label="Linkleri yenile">'+svg(IC_REFRESH,18)+'<span>Yenile</span></button></div>'
+  +'<div id="admL" class="inv-list"></div></section>'
   +'<section class="sec" data-v="durum">'+hd(IC_PULSE,'Uygulama durumu')
   +'<div id="admS"></div>'
   +'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="st">Durumu yenile</button></div></section>'
@@ -454,10 +457,11 @@
       +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">İptal</button></div></div>';
   }
   function list(){
-    api('GET','links').then(function(rows){
+    return api('GET','links').then(function(rows){
       $('#admL').innerHTML=rows.length?rows.map(lkCard).join('')+'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="clr">Hepsini iptal et</button></div>':'<p class="inf-note">Aktif link yok.</p>';
       tx('[data-cnt="davet"]',rows.length||'');
-    }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">Liste alınamadı: '+esc(e&&e.message||e||'hata')+'</p>'});
+      return true;
+    }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">Liste alınamadı: '+esc(e&&e.message||e||'hata')+'</p>';return false});
   }
 
   /* ---------- Davet formu: süre ve kullanım için açılır pencereler ---------- */
@@ -585,6 +589,11 @@
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
     else if(a==='clr'){if(confirm('Tüm linkler iptal edilsin mi?'))api('POST','links/clear',{}).then(list)}
     else if(a==='st'){status();list()}
+    else if(a==='rf'){
+      if(t.classList.contains('spin'))return;
+      t.classList.add('spin');t.disabled=true;
+      list().then(function(ok){if(ok)toast('Linkler güncellendi','ok')}).then(function(){t.classList.remove('spin');t.disabled=false});
+    }
     else if(a==='wk'){if(wkChanged().length&&!confirm('Kaydedilmemiş değişiklikler silinsin mi?'))return;wkLoad(true)}
   });
   box.addEventListener('click',function(e){
