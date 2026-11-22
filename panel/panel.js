@@ -238,32 +238,53 @@
   const IC_ARROW='<path d="M5 12h14M13 6l6 6-6 6"/>';
   const IC_UP='<path d="M6 15l6-6 6 6"/>';
   const IC_BARS='<path d="M6 20V10M12 20V4M18 20v-7"/>';
+  const IC_GEAR='<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>';
+  const IC_LAYERS='<path d="M12 3L3 8l9 5 9-5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/>';
+  const IC_SLIDERS='<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>';
+  const IC_CAL='<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>';
+  const IC_CHECKC='<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>';
+  const IC_PHONE='<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>';
+  const IC_DESK='<rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M9 20h6M12 16v4"/>';
+  const IC_UNDO='<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 0 1 0 12"/>';
+  /* Sayfa başlığı (görsel planlardaki gibi): rozet + büyük başlık + açıklama + sağda logo ve yörünge */
+  function hero(pill,ic,h,sub,art){
+    return '<div class="dv-hero pg-hero"><div class="dv-txt">'+(pill?'<span class="dv-pill">'+svg(ic,14)+pill+'</span>':'')
+    +'<h2 class="dv-h">'+h+'</h2><p class="dv-sub">'+sub+'</p></div>'
+    +'<div class="dv-art" aria-hidden="true"><svg class="dv-orbit" viewBox="0 0 220 120" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="110" cy="60" rx="104" ry="32" transform="rotate(-16 110 60)"/></svg>'
+    +(art||'')+'<img class="dv-logo" src="icons/icon-512.png" alt="" width="104" height="104"></div></div>';
+  }
+  const ART_GLOBE='<svg class="pg-globe" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="24" cy="24" r="20"/><ellipse cx="24" cy="24" rx="8.5" ry="20"/><path d="M5 17h38M5 31h38"/></svg>';
+  function note(tx){return '<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>'+tx+'</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'}
+  function sh(ic,t,right){return '<div class="pg-sh"><span class="pg-sh-ic">'+svg(ic,22)+'</span><h3 class="pg-sh-t">'+t+'</h3>'+(right||'')+'</div>'}
   const TITLES={'':'Nexus',uyg:'Uygulamalar',acik:'Herkese açık',davet:'Davet linkleri',durum:'Uygulama durumu',bilgi:'Bilgi'};
   let cur='',drFrom=null;
   let pubSync=function(){};   /* build() içinde tanımlanır: kaydet çubuğunu gösterir/gizler */
   function tx(sel,t){const e=$(sel);if(e)e.textContent=t}
   function item(v,t,ic,cnt){
-    return '<button class="dr-it" type="button" data-act="nav" data-v="'+v+'">'+svg(ic,22)+'<span>'+t+'</span>'+(cnt?'<span class="dr-n" data-cnt="'+cnt+'"></span>':'')+'</button>';
+    return '<button class="dr-it" type="button" data-act="nav" data-v="'+v+'">'+svg(ic,24)+'<span class="dr-t">'+t+'</span>'+(cnt?'<span class="dr-n" data-cnt="'+cnt+'"></span>':'')+'<i class="dr-ch">'+svg(IC_GO,18)+'</i></button>';
   }
+  function dlb(ic,t){return '<div class="dr-lb">'+svg(ic,20)+'<span>'+t+'</span></div>'}
   function buildDrawer(){
     const d=$('#drawerBody');
     if(!d)return;
     d.innerHTML=''
-    +'<div class="dr-hd"><img class="dr-logo" src="icons/icon-192.png" alt="" width="36" height="36">'
+    +'<svg class="dr-arc" viewBox="0 0 340 200" preserveAspectRatio="xMaxYMin slice" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M110 200C170 90 270 50 345 62"/><path d="M130 200C190 108 280 70 345 80" opacity=".6"/></svg>'
+    +'<div class="dr-hd"><img class="dr-logo" src="icons/icon-192.png" alt="" width="56" height="56">'
     +'<div class="dr-tt"><div class="dr-nm">Nexus</div><div class="dr-sub">PANEL</div></div>'
     +'<button class="ib dr-x" type="button" data-act="mclose" aria-label="Kapat">'+svg(IC_CLOSE,22)+'</button></div>'
     +'<button id="drSum" class="dr-sum" type="button" data-act="nav" data-v="acik"></button>'
-    +'<div class="dr-lb">NEXUS</div>'
+    +dlb(IC_APPS,'NEXUS')
     +item('','Önizleme',IC_APPS,'')
-    +'<div class="dr-lb">YÖNETİM</div>'
+    +dlb(IC_GEAR,'YÖNETİM')
     +item('acik','Herkese açık',IC_GLOBE,'pub')
     +item('davet','Davet linkleri',IC_LINK,'davet')
     +item('durum','Uygulama durumu',IC_PULSE,'')
-    +'<div class="dr-sys"><div class="dr-lb">SİSTEM</div>'
-    +item('uyg','Uygulamalar',IC_PUSH,'apps')
+    +'<div class="dr-sys">'+dlb(IC_LAYERS,'SİSTEM')
+    +item('uyg','Uygulamalar',IC_SLIDERS,'apps')
     +item('bilgi','Bilgi',IC_INFO,'')
-    +'<a class="dr-it" href="/">'+svg(IC_HOME,22)+'<span>Ana sayfaya git</span></a>'
-    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,22)+'<span>Çıkış</span></button></div>';
+    +'<a class="dr-it" href="/">'+svg(IC_HOME,24)+'<span class="dr-t">Ana sayfaya git</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></a>'
+    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,24)+'<span class="dr-t">Çıkış</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></button></div>'
+    +'<div class="dr-ft"><img src="icons/icon-192.png" alt="" width="44" height="44"><div><b>Nexus</b><span>Daha fazlası için, her zaman seninle.</span></div></div>';
     counts();
   }
   function counts(){
@@ -313,15 +334,22 @@
     if(d.toDateString()===new Date(n.getTime()-864e5).toDateString())return 'Dün · '+hm;
     return d.getDate()+' '+AYLAR[d.getMonth()]+(d.getFullYear()!==n.getFullYear()?' '+d.getFullYear():'')+' · '+hm;
   }
+  let lgItems=[],lgAll=false;
+  function lgIc(d){return /android|iphone|ipad|ios|mobile/i.test(d||'')?IC_PHONE:IC_DESK}
+  function lgRender(){
+    const el=$('#lgList');
+    if(!el)return;
+    const a=lgItems,shown=lgAll?a:a.slice(0,3);
+    el.innerHTML=a.length?shown.map(function(x,i){
+      return '<div class="ses-it"><span class="ses-dot'+(i?'':' on')+'"></span><span class="ses-ic">'+svg(lgIc(x.d),20)+'</span><div class="ses-bd"><div class="ses-d">'+esc(x.d||'Bilinmeyen cihaz')+'</div><div class="ses-w">'+esc(lgWhen(x.t))+(x.c?' · '+esc(x.c):'')+'</div></div></div>';
+    }).join(''):'<p class="inf-note">Kayıt yok. Bundan sonraki girişler burada görünür.</p>';
+    const m=$('#lgMore');
+    if(m){m.classList.toggle('off',a.length<=3);m.innerHTML=(lgAll?'Daha Az':'Tümünü Gör')+svg(lgAll?IC_UP:IC_GO,16)}
+  }
   function lgLoad(){
     const el=$('#lgList');
     if(!el)return;
-    api('GET','logins').then(function(j){
-      const a=j.items||[];
-      el.innerHTML=a.length?a.map(function(x,i){
-        return '<div class="ses-it"><span class="ses-dot'+(i?'':' on')+'"></span><div class="ses-bd"><div class="ses-d">'+esc(x.d||'Bilinmeyen cihaz')+'</div><div class="ses-w">'+esc(lgWhen(x.t))+(x.c?' · '+esc(x.c):'')+'</div></div></div>';
-      }).join(''):'<p class="inf-note">Kayıt yok. Bundan sonraki girişler burada görünür.</p>';
-    }).catch(function(){el.innerHTML='<p class="wk-err">Liste alınamadı.</p>'});
+    api('GET','logins').then(function(j){lgItems=j.items||[];lgRender()}).catch(function(){el.innerHTML='<p class="wk-err">Liste alınamadı.</p>'});
   }
   /* 04-boot.js route() her görünüm değişiminde çağırır: v = '' (Uygulamalar) | acik | davet | durum | bilgi */
   window.panelView=function(v){
@@ -346,6 +374,7 @@
     if(a==='menu'){vib(12);openDr()}
     else if(a==='mclose'){closeDr()}
     else if(a==='nav'){closeDr();location.hash=t.dataset.v}
+    else if(a==='jump'){vib(10);location.hash=t.dataset.to}
     else if(a==='mout'){api('POST','logout',{}).then(function(){location.href='/'})}
     else if(a==='lgall'){if(confirm('Bu cihaz dahil tüm cihazlardaki oturumlar kapatılsın mı?'))api('POST','logout-all',{}).then(function(){location.href='/'})}
   });
@@ -377,16 +406,22 @@
   }).join('');
   function kv(ic,k,v,btn){
     const bd='<span class="kv-ic">'+svg(ic,20)+'</span><span class="kv-bd"><span class="kv-k">'+k+'</span><div class="kv-v">'+v+'</div></span>';
-    return btn?'<button class="kv-r" type="button" data-act="set">'+bd+'<span class="kv-go">'+svg(IC_GO,16)+'</span></button>':'<div class="kv-r">'+bd+'</div>';
+    /* btn: 'theme' | 'snd' = ilgili ayar penceresi · 'uyg' = Uygulamalar ekranı */
+    const at=btn==='uyg'?'data-act="jump" data-to="uyg"':btn?'data-act="set" data-w="'+btn+'"':'';
+    return btn?'<button class="kv-r" type="button" '+at+'>'+bd+'<span class="kv-go">'+svg(IC_GO,18)+'</span></button>':'<div class="kv-r">'+bd+'</div>';
   }
   box.innerHTML=''
   +'<section class="sec" data-v="uyg">'+hd(IC_APPS,'Uygulamalar')
   +'<div class="wk-sum"><div id="wkSum"></div><button class="btn btn-sec" type="button" data-adm="wk">Yenile</button></div>'
   +'<p class="sec-note">Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, bölüm ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.</p>'
   +'<div id="wkMsg"></div><div class="wk-list" id="wkList"></div></section>'
-  +'<section class="sec" data-v="acik">'+hd(IC_GLOBE,'Herkese açık')
-  +'<p class="sec-note">Açtıkların ana sayfada herkese görünür. Kapalılar gizli kalır, yalnız davet linkiyle verilir. Değişiklikler Kaydet\'e basınca uygulanır.</p>'
-  +'<div class="sw-list" id="pbList">'+pubs+'</div></section>'
+  +'<section class="sec" data-v="acik">'
+  +hero('Public Mod',IC_GLOBE,'Uygulamalarını <em>Herkese Aç</em>','Seçtiğin uygulamaları herkese açık hale getir, link ile paylaşılabilir yap.',ART_GLOBE)
+  +note('Herkese açık yaptığın uygulamalar, herkes tarafından erişilebilir olacaktır. Kapalılar yalnız davet linkiyle verilir.')
+  +sh(IC_APPS,'Uygulamalar','<button class="pg-pill" type="button" data-adm="pball" id="pbAll"></button>')
+  +'<div class="sw-list" id="pbList">'+pubs+'</div>'
+  +'<div class="pb-act"><button class="pb-undo" type="button" data-adm="pbundo" id="pbUndo" aria-label="Değişiklikleri geri al" hidden>'+svg(IC_UNDO,20)+'</button>'
+  +'<button class="btn btn-pri btn-lg pb-save" type="button" data-adm="pbsave" id="pbSave" disabled>'+svg(IC_SEND,22)+'<span>Değişiklikleri Kaydet</span></button></div></section>'
   +'<section class="sec dv" data-v="davet">'
   +'<div class="dv-hero"><div class="dv-txt"><span class="dv-pill">'+svg(IC_LINK,14)+'Özel davet</span>'
   +'<h2 class="dv-h">Davet linki <em>oluştur</em></h2>'
@@ -412,19 +447,26 @@
   +'<div id="admL" class="inv-list"></div>'
   +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'
   +'</div></div></div></section>'
-  +'<section class="sec" data-v="durum">'+hd(IC_PULSE,'Uygulama durumu')
+  +'<section class="sec" data-v="durum">'
+  +hero('',0,'Uygulama <em>durumu</em>','Uygulamalarının güncel durumunu buradan görüntüleyebilirsin.')
   +'<div id="admS"></div>'
-  +'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="st">Durumu yenile</button></div></section>'
-  +'<section class="sec" data-v="bilgi">'+hd(IC_INFO,'Bilgi')
-  +'<div class="info-hero"><img class="info-logo" src="icons/icon-192.png" alt="" width="56" height="56"><div><div class="info-nm">Nexus</div><span id="nxVer" class="ver lg off"></span></div></div>'
+  +'<div class="adm-row pg-row"><button class="btn btn-sec pg-btn" type="button" data-adm="st">'+svg(IC_REFRESH,18)+'Durumu yenile</button></div></section>'
+  +'<section class="sec" data-v="bilgi">'
+  +hero('Uygulama Bilgileri',IC_INFO,'<em>Nexus</em>','Daha fazlası için, her zaman seninle.')
+  +'<div class="info-hero"><span class="info-lg"><img class="info-logo" src="icons/icon-192.png" alt="" width="64" height="64"></span>'
+  +'<div class="info-bd"><div class="info-nm">Nexus</div><span id="nxVer" class="ver lg off"></span></div>'
+  +'<span id="nxUp" class="info-ok off">'+svg(IC_CHECKC,18)+'<span>Son Sürüm</span></span></div>'
   +'<div class="kv">'
-  +kv(IC_PUSH,'SON PUSH','<span id="kvPush"></span>')
-  +kv(IC_IMG,'SİMGELER','<p id="netState" class="inf-st" role="status"></p>')
-  +kv(IC_SUN,'TEMA','<span data-bind="theme"></span>',true)
-  +kv(IC_SND,'TIKLAMA SESİ','<span data-bind="snd"></span>',true)
+  +kv(IC_CAL,'Son Push','<span id="kvPush"></span>')
+  +kv(IC_IMG,'Simgeler','<p id="netState" class="inf-st" role="status"></p>','uyg')
+  +kv(IC_SUN,'Tema','<span data-bind="theme"></span>','theme')
+  +kv(IC_SND,'Tıklama Sesi','<span data-bind="snd"></span>','snd')
   +'</div>'
-  +'<h3 class="inv-h">Son girişler</h3><div id="lgList" class="ses-list"></div>'
-  +'<div class="adm-row"><button class="btn btn-sec" type="button" data-act="lgall">Tüm cihazlardan çık</button></div></section>';
+  +sh(IC_BARS,'Son Girişler','<button class="pg-pill off" type="button" data-adm="lgmore" id="lgMore"></button>')
+  +'<div id="lgList" class="ses-list"></div>'
+  +'<div class="adm-row pg-row"><button class="btn btn-sec pg-btn" type="button" data-act="lgall">Tüm cihazlardan çık</button></div>'
+  +note('Nexus, güvenli ve kararlı bir şekilde kullanılmak üzere tasarlanmıştır.')+'</section>'
+  +'<div class="g-ft pn-ft"><div class="g-ft-nm"><img src="icons/icon-192.png" alt="" width="30" height="30"><b>Nexus</b></div><p>Daha fazlası için, her zaman seninle.</p></div>';
 
   /* Kaydet / geri al çubuğu (Herkese açık): değişiklik olunca altta çıkar */
   let savedPub=APPS.filter(function(a){return a.pub}).map(function(a){return a.id});
@@ -448,11 +490,15 @@
     $$('.sw-row[data-id]',box).forEach(function(r){
       r.classList.toggle('chg',ch.some(function(a){return a.id===r.dataset.id}));
     });
-    const show=cur==='acik'&&ch.length>0;
-    bar.classList.toggle('show',show);
-    bar.inert=!show;
-    barFlag();
-    if(ch.length)$('#sbTx').innerHTML=ch.length+' değişiklik<small>Henüz kaydedilmedi</small>';
+    /* Kaydet / Geri al artık listenin altında yapışkan düğme; alttan çıkan çubuk kullanılmaz */
+    const sv=$('#pbSave'),un=$('#pbUndo'),all=$('#pbAll');
+    if(sv){sv.disabled=saving||!ch.length;sv.parentNode.classList.toggle('chg',ch.length>0);$('span',sv).textContent=saving?'Kaydediliyor…':ch.length?'Değişiklikleri Kaydet ('+ch.length+')':'Değişiklikleri Kaydet'}
+    if(un)un.hidden=!ch.length||saving;
+    if(all){
+      const n=$$('input[name=pb]',box),on=n.filter(function(x){return x.checked}).length;
+      all.innerHTML=(n.length&&on===n.length?'Seçimi Kaldır':'Tümünü Seç')+svg(IC_CHECK,16);
+      all.classList.toggle('off',!n.length);
+    }
   };
   function pubUndo(){
     $$('input[name=pb]',box).forEach(function(x){x.checked=savedPub.indexOf(x.value)>=0});
@@ -463,10 +509,8 @@
   function pubSave(){
     if(saving)return;
     const ids=$$('input[name=pb]:checked',box).map(function(x){return x.value});
-    const btn=$('[data-sb=save]',bar);
     saving=true;
-    btn.disabled=true;
-    btn.textContent='Kaydediliyor…';
+    pubSync();
     api('POST','public',{ids:ids}).then(function(j){
       if(!j.ok){toast(j.e||'Kaydedilemedi','err');return}
       savedPub=j.ids||ids;
@@ -481,7 +525,7 @@
       vib([20,40,20]);
       toast('Kaydedildi','ok',savedPub.length+' uygulama herkese açık');
     }).catch(function(){toast('Kaydedilemedi','err','Bağlantını kontrol et')})
-      .then(function(){saving=false;btn.disabled=false;btn.textContent='Kaydet'});
+      .then(function(){saving=false;pubSync()});
   }
   bar.addEventListener('click',function(e){
     const t=e.target.closest('[data-sb]');
@@ -621,19 +665,23 @@
     const n=APPS.length;
     if(!n){el.innerHTML='<p class="inf-note">Uygulama listesi boş.</p>';return}
     el.innerHTML='<div class="stx-sum" id="stSum"><div class="stx-ring" id="stRing"><span id="stPct"></span></div>'
-      +'<div><div class="stx-big" id="stBig"></div><div class="stx-small" id="stSm"></div></div></div>'
+      +'<div class="stx-tx"><div class="stx-big" id="stBig"></div><div class="stx-small" id="stSm"></div></div>'
+      +'<svg class="stx-ekg" viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 30h38l7-18 10 40 9-30 6 8h50"/></svg></div>'
+      +sh(IC_APPS,'Uygulama Durumları','<span class="pg-pill pg-cnt">'+n+' Uygulama</span>')
       +'<div class="stx-list">'+APPS.map(function(a){
-        return '<div class="stx" data-st="'+esc(a.id)+'"><img class="stx-ic" src="'+esc(localIcon(a))+'" alt="" width="44" height="44">'
+        return '<a class="stx" data-st="'+esc(a.id)+'" href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="stx-ic" src="'+esc(localIcon(a))+'" alt="" width="52" height="52">'
         +'<div class="stx-bd"><div class="stx-nm">'+esc(a.name)+'</div><div class="stx-ms">Bekleniyor…</div></div>'
-        +'<span class="stx-pill wait">Kontrol</span></div>';
-      }).join('')+'</div>';
+        +'<span class="stx-pill wait">Kontrol</span><i class="stx-go">'+svg(IC_GO,18)+'</i></a>';
+      }).join('')+'</div>'
+      +'<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><div class="pg-nt"><b>Durum Bilgisi</b><p id="stNt"></p></div><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>';
     let done=0,up=0;
     function upd(){
       const fin=done>=n;
       $('#stRing').style.setProperty('--p',Math.round(up/n*100));
       $('#stPct').textContent=fin?Math.round(up/n*100)+'%':done+'/'+n;
-      $('#stBig').textContent=!fin?'Kontrol ediliyor…':up===n?'Hepsi çalışıyor':up+' / '+n+' çalışıyor';
-      $('#stSm').textContent=fin?(up===n?'Tüm uygulamalar yanıt veriyor.':(n-up)+' uygulama yanıt vermiyor.'):'Biraz sürebilir.';
+      $('#stBig').innerHTML=!fin?'Kontrol ediliyor…':up===n?'Hepsi çalışıyor<i class="stx-ok">'+svg(IC_CHECKC,22)+'</i>':up+' / '+n+' çalışıyor';
+      $('#stSm').textContent=fin?(up===n?'Tüm uygulamalar sorunsuz çalışıyor.':(n-up)+' uygulama yanıt vermiyor.'):'Biraz sürebilir.';
+      $('#stNt').textContent=fin?(up===n?'Tüm uygulamalar şu anda aktif ve sorunsuz çalışıyor.':(n-up)+' uygulama şu anda yanıt vermiyor.'):'Uygulamalar kontrol ediliyor…';
       $('#stSum').classList.toggle('bad',fin&&up<n);
     }
     upd();
@@ -647,7 +695,7 @@
           done++;if(r.ok)up++;
           const row=$('.stx[data-st="'+a.id+'"]',el);
           if(row){
-            $('.stx-ms',row).textContent=r.ok?'Yanıt süresi '+r.ms+' ms':'Yanıt gelmedi';
+            $('.stx-ms',row).textContent=r.ok?'Yanıt süresi: '+r.ms+' ms':'Yanıt gelmedi';
             const pl=$('.stx-pill',row);
             pl.className='stx-pill'+(r.ok?'':' bad');
             pl.textContent=r.ok?'Çalışıyor':'Açılmıyor';
@@ -660,7 +708,27 @@
     const t=e.target.closest('[data-adm]');
     if(!t)return;
     const a=t.dataset.adm;
-    if(a==='cp'){try{navigator.clipboard.writeText(t.dataset.u).then(function(){toast('Link kopyalandı','ok')},function(){toast('Kopyalanamadı','err')})}catch(x){toast('Kopyalanamadı','err')}}
+    if(a==='cp'){
+      const rc=t.closest('.nv-res');
+      try{navigator.clipboard.writeText(t.dataset.u).then(function(){toast('Link kopyalandı','ok');if(rc)rc.classList.add('copied')},function(){toast('Kopyalanamadı','err')})}catch(x){toast('Kopyalanamadı','err')}
+    }
+    else if(a==='xres'){
+      const c=t.closest('.nv-res');
+      if(!c)return;
+      vib(8);
+      c.style.maxHeight=c.offsetHeight+'px';
+      void c.offsetHeight;
+      c.classList.add('out');
+      setTimeout(function(){const r=$('#admR');if(r)r.innerHTML=''},420);
+    }
+    else if(a==='pball'){
+      const n=$$('input[name=pb]',box),all=n.length&&n.every(function(x){return x.checked});
+      n.forEach(function(x){x.checked=!all});
+      vib(10);pubSync();
+    }
+    else if(a==='pbsave'){pubSave()}
+    else if(a==='pbundo'){pubUndo()}
+    else if(a==='lgmore'){lgAll=!lgAll;lgRender()}
     else if(a==='sh'){if(navigator.share)navigator.share({url:t.dataset.u}).catch(function(){});else toast('Paylaşım yok, kopyala')}
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
     else if(a==='clr'){if(confirm('Tüm linkler iptal edilsin mi?'))api('POST','links/clear',{}).then(list)}
@@ -691,7 +759,7 @@
       toast('Link hazır','ok','Kopyala ya da paylaş');
       vib([20,40,20]);
       $('#admN').value='';$('#admN').style.height='';tx('#nvNc','0/120');
-      $('#admR').innerHTML='<div class="nv-res"><div class="nv-res-h">'+svg(IC_CHECK,18)+'Link hazır</div>'
+      $('#admR').innerHTML='<div class="nv-res"><button class="nv-res-x" type="button" data-adm="xres" aria-label="Kartı kapat">'+svg(IC_CLOSE,18)+'</button><div class="nv-res-h">'+svg(IC_CHECK,18)+'Link hazır</div>'
         +'<input class="adm-in" readonly value="'+esc(r.url)+'" onfocus="this.select()">'
         +'<div class="adm-row"><button class="btn btn-pri" type="button" data-adm="cp" data-u="'+esc(r.url)+'">Kopyala</button>'
         +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+esc(r.url)+'">Paylaş</button></div></div>';
@@ -699,8 +767,17 @@
     }).catch(function(){}).then(function(){btn.disabled=false});
   });
   invUp();
+  pubSync();
   relist=list;
   verInto($('#nxVer'),'');
+  if(navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(function(r){
+    const e=$('#nxUp');
+    if(!e||!r)return;
+    const w=!!(r.waiting||r.installing);
+    e.classList.toggle('warn',w);
+    $('span',e).textContent=w?'Yeni sürüm':'Son Sürüm';
+    e.classList.remove('off');
+  }).catch(function(){});
   pushInto($('#kvPush'),true);
   bindLive();
   updNet();

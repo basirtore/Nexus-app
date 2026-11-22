@@ -135,7 +135,7 @@ function pushInto(el,long){
   ghPush().then(function(t){
     if(!t){el.textContent=long?'Alınamadı':'';return}
     el.innerHTML=long
-      ?esc(fmtDT(t))+' <small>· '+esc(ago(t))+'</small>'
+      ?esc(fmtDT(t))+' <small class="sep">'+esc(ago(t))+'</small>'
       :'Son push '+esc(fmtShort(t));
   });
 }
@@ -152,8 +152,9 @@ function verInto(el,prefix){
 }
 
 /* ---------- Ayarlar sayfası (alttan açılan): tema + ses ---------- */
-function settingsHTML(){
-  const cur=themeGet();
+function settingsHTML(w){
+  /* w: 'theme' yalnız tema · 'snd' yalnız ses · boş = ikisi (üstteki güneş düğmesi) */
+  const cur=themeGet(),th=!w||w==='theme',sd=!w||w==='snd';
   const tm=THEMES.map(function(o){
     const sw=o.id==='auto'
       ?'<span class="tm-sw tm-auto"><i data-theme="light"></i><i data-theme="dark"></i></span>'
@@ -161,16 +162,15 @@ function settingsHTML(){
     return '<button class="tm" type="button" data-act="theme" data-t="'+o.id+'" aria-pressed="'+(o.id===cur)+'">'+sw+'<span>'+o.t+'</span></button>';
   }).join('');
   return ''
-    +'<div class="sh-hd"><div class="sh-tt"><h2 id="shTitle" class="sh-title">Görünüm ve ses</h2><p class="sh-sub">Bu cihazda saklanır</p></div>'
+    +'<div class="sh-hd"><div class="sh-tt"><h2 id="shTitle" class="sh-title">'+(w==='theme'?'Tema':w==='snd'?'Tıklama sesi':'Görünüm ve ses')+'</h2><p class="sh-sub">Bu cihazda saklanır</p></div>'
     +'<button class="ib" type="button" data-act="close" aria-label="Kapat">'+svg(IC_X,22)+'</button></div>'
-    +'<div class="set-h" role="presentation">TEMA</div>'
-    +'<div class="tm-grid" role="group" aria-label="Tema">'+tm+'</div>'
-    +'<div class="set-h" role="presentation">SES</div>'
+    +(th?(w?'':'<div class="set-h" role="presentation">TEMA</div>')+'<div class="tm-grid" role="group" aria-label="Tema">'+tm+'</div>':'')
+    +(sd?(w?'':'<div class="set-h" role="presentation">SES</div>')
     +'<label class="sw-row"><span class="sw-tx">Tıklama sesi<small>Düğmelerde ve bildirimlerde kısa ses</small></span>'
-    +'<input class="sw" type="checkbox" name="snd"'+(S.snd!==false?' checked':'')+'></label>';
+    +'<input class="sw" type="checkbox" name="snd"'+(S.snd!==false?' checked':'')+'></label>':'');
 }
-function openSettings(){
-  $('#sheetBody').innerHTML=settingsHTML();
+function openSettings(w){
+  $('#sheetBody').innerHTML=settingsHTML(w);
   sheetShow();
 }
 function bindLive(){
@@ -181,7 +181,7 @@ function bindLive(){
 document.addEventListener('click',function(e){
   const t=e.target.closest('[data-act]');
   if(!t)return;
-  if(t.dataset.act==='set'){vib(12);openSettings()}
+  if(t.dataset.act==='set'){vib(12);openSettings(t.dataset.w)}
   else if(t.dataset.act==='theme'){
     vib(10);
     themeSet(t.dataset.t);
