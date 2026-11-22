@@ -374,8 +374,8 @@ details.sec[open] .sec-chev{transform:rotate(180deg)}
 .app-open:focus-visible{outline:none}
 .app-open:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
 .app-ds{margin-top:2px;color:var(--mute);font-size:14px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.app-ac{position:relative;z-index:1;display:flex;align-items:center;gap:0}
-.app-add{color:var(--mute)}
+.app-ac{position:relative;z-index:1;display:flex;align-items:center;gap:0;pointer-events:none}   /* dokunuş alttaki satır bağlantısına geçer ("Aç") */
+.app-add{color:var(--mute);pointer-events:auto}   /* Yükle düğmesi tıklanabilir kalır */
 .app-go{flex:none;margin:0 8px 0 4px;color:var(--mute);pointer-events:none}
 .app.arch{background:transparent}
 .app.arch .app-ic{opacity:.7}
