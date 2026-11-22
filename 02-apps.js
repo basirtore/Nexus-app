@@ -42,12 +42,20 @@ function appCard(a){
 function renderApps(){
   const box=$('#v-apps');
   if(!box)return;
-  const hi=$('#hello');   /* karşılama notu yalnız ana sayfada var; liste doluysa görünür */
-  if(hi)hi.classList.toggle('off',!APPS.length);
+  const hi=$('#hello');   /* karşılama notu yalnız ana sayfada var; metni uygulama sayısına göre değişir */
+  if(hi){
+    const n=APPS.length,t=$('#helloTx');
+    hi.classList.toggle('off',APPS_FAIL);
+    if(t)t.innerHTML=n===0
+      ?'Nexus\'a hoş geldin. Uygulamalar henüz yayında değil; hazır oldukça burada görünecek. Birkaç gün sonra tekrar uğrayabilirsin.'
+      :n===1
+        ?'Şu an yayında tek bir uygulama var. Beğenirsen <b>Yükle</b> ile ana ekranına ekle, <b>Aç</b> ile hemen dene. Yenileri geldikçe burada olacak.'
+        :n+' uygulama burada, tek yerde. Beğendiğini <b>Yükle</b> ile ana ekranına ekleyebilir, <b>Aç</b> ile hemen deneyebilirsin.';
+  }
   if(!APPS.length){
     box.innerHTML=APPS_FAIL
       ?'<div class="empty"><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :'<div class="empty"><p>Henüz uygulama yok.</p></div>';
+      :hi?'':'<div class="empty"><p>Henüz uygulama yok.</p></div>';
     return;
   }
   box.innerHTML=SECS.map(function(s){
