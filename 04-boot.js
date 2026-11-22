@@ -18,12 +18,12 @@
     verInto($('#ftVer'),'Nexus ');
     pushInto($('#ftPush'),false);
   }
-  function hidden(t){
-    if(t){t.classList.remove('pop');void t.offsetWidth;t.classList.add('pop')}
+  /* Tamamen sessiz: animasyon, ses, titreşim yok; dokunuşun görünür bir izi kalmaz */
+  function hidden(){
     const n=Date.now();
     taps=taps.filter(function(x){return n-x<3000});
     taps.push(n);
-    if(taps.length>=3){taps=[];vib(20);snd('ok');setTimeout(function(){location.href='/panel/login'},180)}
+    if(taps.length>=3){taps=[];location.href='/panel/login'}
   }
 
   load();

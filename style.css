@@ -540,8 +540,7 @@ details.sec[open] .sec-chev{transform:rotate(180deg)}
 .sec-list>.app:nth-child(4){animation-delay:.2s}
 .sec-list>.app:nth-child(n+5){animation-delay:.25s}
 .adm>.sec:not(.off){animation:rise .4s var(--ease) both}
-.top-logo[data-act="tap"]{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.top-logo.pop{animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
+.top-logo[data-act="tap"]{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .top-set{color:var(--mute)}
 
 /* Sürüm etiketi: degrade çerçeve, nabız atan nokta */
