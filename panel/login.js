@@ -1,7 +1,7 @@
 'use strict';
 (function(){
   var $=function(i){return document.getElementById(i)};
-  var f=$('lf'),k=$('key'),e=$('err'),c=$('card'),b=$('go'),eye=$('eye'),rem=$('rem'),busy=false,AC=null;
+  var f=$('lf'),k=$('key'),e=$('err'),c=$('card'),b=$('go'),eye=$('eye'),busy=false,AC=null;
 
   /* Kısa ses: bu sayfa fx.js'i yüklemez, bu yüzden küçük bir kopyası burada. Ayar: localStorage nexus.v1 > snd (false = kapalı) */
   function unlock(){
@@ -54,7 +54,7 @@
     busy=true;e.textContent='';
     b.disabled=true;b.classList.add('is-load');b.setAttribute('aria-busy','true');
     unlock();
-    fetch('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({key:k.value,remember:rem.checked})})
+    fetch('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({key:k.value,remember:true})})
     .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
       if(x.ok){
