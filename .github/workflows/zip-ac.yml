@@ -1,0 +1,18 @@
+name: Zip aç
+on:
+  push:
+    paths: ['Yukle/*.zip']
+permissions:
+  contents: write
+jobs:
+  ac:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for z in Yukle/*.zip; do unzip -o "$z"; git rm -f "$z"; done
+          git config user.name "zip-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Zip ile güncelleme"
+          git push
