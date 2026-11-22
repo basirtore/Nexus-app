@@ -252,7 +252,7 @@
     +'<div class="dr-hd"><img class="dr-logo" src="icons/icon-192.png" alt="" width="36" height="36">'
     +'<div class="dr-tt"><div class="dr-nm">Nexus</div><div class="dr-sub">PANEL</div></div>'
     +'<button class="ib dr-x" type="button" data-act="mclose" aria-label="Kapat">'+svg(IC_CLOSE,22)+'</button></div>'
-    +'<div class="dr-sum"><div class="dr-big" id="drBig"></div><div class="dr-small" id="drSm"></div></div>'
+    +'<button id="drSum" class="dr-sum" type="button" data-act="nav" data-v="acik"></button>'
     +'<div class="dr-lb">NEXUS</div>'
     +item('','Önizleme',IC_APPS,'')
     +'<div class="dr-lb">YÖNETİM</div>'
@@ -264,11 +264,20 @@
     +item('bilgi','Bilgi',IC_INFO,'')
     +'<a class="dr-it" href="/">'+svg(IC_HOME,22)+'<span>Ana sayfaya git</span></a>'
     +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,22)+'<span>Çıkış</span></button></div>';
+    counts();
   }
   function counts(){
     const n=APPS.length,p=APPS.filter(function(a){return a.pub}).length;
-    tx('#drBig',n+' uygulama');
-    tx('#drSm',p+' herkese açık · '+(n-p)+' gizli');
+    /* Menü üstündeki durum kartı: ana sayfanın şu anki hali; dokununca ilgili ekrana gider */
+    const sm=$('#drSum');
+    if(sm){
+      const t=!n?['off','Uygulama yok','Önce Uygulamalar ekranından aç','uyg']
+        :!p?['warn','Ana sayfa boş','Herkese açık uygulama yok','acik']
+        :['ok',p+' uygulama yayında',n-p?(n-p)+' gizli · ana sayfada herkese görünür':'Hepsi ana sayfada görünür','acik'];
+      sm.className='dr-sum '+t[0];
+      sm.dataset.v=t[3];
+      sm.innerHTML='<span class="dr-dot"></span><span class="dr-st"><b>'+esc(t[1])+'</b><small>'+esc(t[2])+'</small></span><span class="dr-go">'+svg(IC_GO,18)+'</span>';
+    }
     tx('[data-cnt="apps"]',n);
     tx('[data-cnt="pub"]',p);
   }

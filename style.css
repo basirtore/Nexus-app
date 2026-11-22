@@ -1087,3 +1087,16 @@ body.pnl .lk{border-radius:20px}
 .dv .lk-chip:nth-child(3){display:none}
 .dv-hr{margin-top:14px}
 .dv .lk-top{align-items:flex-start}
+
+/* ---------- Panel menüsü: durum kartı ---------- */
+.dr-sum{display:flex;align-items:center;gap:14px;width:100%;margin-top:18px;padding:14px 14px 14px 16px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface-2);color:var(--text);font:inherit;text-align:left;cursor:pointer;min-height:68px;transition:transform var(--dur) var(--ease)}
+.dr-sum:active{transform:scale(.98)}
+.dr-sum.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.dr-sum.warn{border-color:color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--surface-2))}
+.dr-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--mute);color:var(--mute)}
+.dr-sum.ok .dr-dot{background:var(--ok);color:var(--ok);animation:ping 2.2s ease-out infinite}
+.dr-sum.warn .dr-dot{background:var(--warn);color:var(--warn)}
+.dr-st{flex:1;min-width:0}
+.dr-st b{display:block;font-size:17px;font-weight:700;line-height:1.25}
+.dr-st small{display:block;margin-top:2px;color:var(--mute);font-size:13px;line-height:1.35}
+.dr-go{flex:none;display:inline-flex;color:var(--mute)}
