@@ -136,7 +136,7 @@ Bölüm 1 token'lar (açık + koyu, tek teal vurgu; `--r-s/m/l` = 8/12/16, `--du
 `load → migrate → start (loadApps → renderApps → route → loadLive)`, `showFt`, `hidden` (5 dokunuş → `/panel/login`), `route()` (hash → görünüm, `panelView` çağrısı), `hashchange`, tek `click` dinleyicisi (`data-act`: install/open/go/close/pl/retry/tap; menü işlemleri `panel/panel.js`'te), `Escape`, `online/offline/visibilitychange`, `loadLive(true)`.
 
 ### icons/
-Nexus: `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (opak), `favicon-32.png` (ortada parlak çekirdek, çevresinde halka ve 4 renkli uydu nokta). `icons/apps/`: `life`, `health`, `jurnalist`, `edgeflow`, `vitaflow` (.png) = repolardaki `icons/icon-192.png` kopyaları (21 Kasım 2026 tarihli). **`vitaflow.png` şimdilik nötr yer tutucudur**; gerçek `icon-192.png` gelince üzerine yaz. Bir uygulamanın simgesi değişince yeni 192 dosyası bu klasöre konur.
+Nexus: `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (opak), `favicon-64.png` ve kökte `favicon.ico` (16/32/48/64 px) (koyu zeminde mor-mavi gradyanlı "N" harfi, etrafında ışıklı halka ve yıldız). `icons/apps/`: `life`, `health`, `jurnalist`, `edgeflow`, `vitaflow` (.png) = repolardaki `icons/icon-192.png` kopyaları (21 Kasım 2026 tarihli). **`vitaflow.png` şimdilik nötr yer tutucudur**; gerçek `icon-192.png` gelince üzerine yaz. Bir uygulamanın simgesi değişince yeni 192 dosyası bu klasöre konur.
 
 ---
 

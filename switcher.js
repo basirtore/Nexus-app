@@ -52,7 +52,7 @@
   host.setAttribute('data-nexus-switcher','');
   var root=host.attachShadow({mode:'open'});
   root.innerHTML='<style>'+css+'</style><div id="w">'
-    +'<button class="fab" type="button" aria-label="Nexus: uygulamalar aras\u0131nda ge\u00e7" aria-expanded="false"><img src="'+esc(base)+'icons/favicon-32.png" alt=""></button>'
+    +'<button class="fab" type="button" aria-label="Nexus: uygulamalar aras\u0131nda ge\u00e7" aria-expanded="false"><img src="'+esc(base)+'icons/favicon-64.png" alt=""></button>'
     +'<div class="bg"></div><div class="pn" role="menu" aria-label="Uygulamalar"></div></div>';
   var w=root.getElementById('w'),fab=root.querySelector('.fab'),pn=root.querySelector('.pn');
 
