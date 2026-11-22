@@ -404,11 +404,14 @@
   +'<button class="btn btn-pri btn-lg dv-go" type="submit">'+svg(IC_LINK,22)+'<span>Link oluştur</span><i class="dv-go-ar">'+svg(IC_ARROW,18)+'</i></button>'
   +'</form>'
   +'<div id="admR" class="adm-res"></div>'
-  +'<div class="inv-hr dv-hr"><span class="dv-hr-ic">'+svg(IC_BARS,22)+'</span><h3 class="inv-h">Aktif linkler</h3>'
-  +'<button class="lk-all off" type="button" data-adm="more" id="lkAll"></button>'
-  +'<button class="lk-rf" type="button" data-adm="rf" aria-label="Linkleri yenile">'+svg(IC_REFRESH,18)+'<span>Yenile</span></button></div>'
+  +'<div class="lk-acc" id="lkAcc">'
+  +'<button class="lk-tg" type="button" id="lkTg" data-adm="tg" aria-expanded="false" aria-controls="lkPn">'
+  +'<span class="lk-tg-ic">'+svg(IC_BARS,22)+'</span><span class="lk-tg-t">Aktif linkler</span><b class="lk-tg-n" id="lkCnt"></b>'
+  +'<span class="lk-tg-ch">'+svg(IC_CHEV,20)+'</span></button>'
+  +'<div class="lk-pn" id="lkPn" inert><div class="lk-pn-in">'
   +'<div id="admL" class="inv-list"></div>'
-  +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div></section>'
+  +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'
+  +'</div></div></div></section>'
   +'<section class="sec" data-v="durum">'+hd(IC_PULSE,'Uygulama durumu')
   +'<div id="admS"></div>'
   +'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="st">Durumu yenile</button></div></section>'
@@ -508,27 +511,30 @@
     const u=esc(location.origin+'/g/'+L.code);
     const dead=L.exp&&m<=0;
     return '<div class="lk"><div class="lk-top"><div class="lk-ics">'+ics+'</div>'
-      +'<div class="lk-tx"><div class="lk-nm">'+esc(L.apps.map(name).join(', '))+'</div><div class="lk-chips">'+chips+'</div></div>'
+      +'<div class="lk-tx"><div class="lk-hd"><div class="lk-nm">'+esc(L.apps.map(name).join(', '))+'</div>'
       +'<span class="lk-st'+(dead?' warn':'')+'">'+(dead?'Süresi doldu':'Aktif')+'</span></div>'
+      +'<div class="lk-chips">'+chips+'</div></div></div>'
       +bars+(L.note?'<div class="lk-note">'+esc(L.note)+'</div>':'')
       +'<div class="lk-ac"><button class="btn btn-sec" type="button" data-adm="cp" data-u="'+u+'">'+svg(IC_COPY,18)+'Kopyala</button>'
       +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">'+svg(IC_SEND,18)+'Paylaş</button>'
       +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">'+svg(IC_TRASH,18)+'İptal</button></div></div>';
   }
-  let lkOpen=false;   /* Aktif linkler: yalnız ilki görünür, "Tümünü gör" ile hepsi açılır */
-  function lkAllTx(n){
-    const b=$('#lkAll');
-    if(!b)return;
-    b.classList.toggle('off',n<2);
-    b.innerHTML=(lkOpen?'Daha az':'Tümünü gör ('+n+')')+svg(lkOpen?IC_UP:IC_ARROW,16);
+  /* Aktif linkler: kapalı şerit, dokununca animasyonla açılır */
+  function lkToggle(open){
+    const tg=$('#lkTg'),pn=$('#lkPn'),acc=$('#lkAcc');
+    if(!tg||!pn)return;
+    if(open===undefined)open=tg.getAttribute('aria-expanded')!=='true';
+    tg.setAttribute('aria-expanded',open?'true':'false');
+    acc.classList.toggle('open',open);
+    pn.inert=!open;
   }
   function list(){
     return api('GET','links').then(function(rows){
-      if(rows.length<2)lkOpen=false;
-      $('#admL').innerHTML=rows.length?lkCard(rows[0])
-        +(rows.length>1?'<div class="lk-more'+(lkOpen?'':' off')+'" id="lkMore">'+rows.slice(1).map(lkCard).join('')+'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="clr">Hepsini iptal et</button></div></div>':'')
-        :'<p class="inf-note">Aktif link yok.</p>';
-      lkAllTx(rows.length);
+      $('#admL').innerHTML=rows.length?rows.map(lkCard).join('')
+        +'<div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button>'
+        +(rows.length>1?'<button class="btn btn-sec lk-del" type="button" data-adm="clr">Hepsini iptal et</button>':'')+'</div>'
+        :'<p class="inf-note">Aktif link yok.</p><div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button></div>';
+      tx('#lkCnt',rows.length||'');
       tx('[data-cnt="davet"]',rows.length||'');
       return true;
     }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">Liste alınamadı: '+esc(e&&e.message||e||'hata')+'</p>';return false});
@@ -659,7 +665,7 @@
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
     else if(a==='clr'){if(confirm('Tüm linkler iptal edilsin mi?'))api('POST','links/clear',{}).then(list)}
     else if(a==='st'){status();list()}
-    else if(a==='more'){lkOpen=!lkOpen;const m=$('#lkMore');if(m)m.classList.toggle('off',!lkOpen);lkAllTx($$('.lk',box).length)}
+    else if(a==='tg'){vib(10);lkToggle()}
     else if(a==='rf'){
       if(t.classList.contains('spin'))return;
       t.classList.add('spin');t.disabled=true;
@@ -689,7 +695,7 @@
         +'<input class="adm-in" readonly value="'+esc(r.url)+'" onfocus="this.select()">'
         +'<div class="adm-row"><button class="btn btn-pri" type="button" data-adm="cp" data-u="'+esc(r.url)+'">Kopyala</button>'
         +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+esc(r.url)+'">Paylaş</button></div></div>';
-      list();
+      list().then(function(){lkToggle(true)});
     }).catch(function(){}).then(function(){btn.disabled=false});
   });
   invUp();

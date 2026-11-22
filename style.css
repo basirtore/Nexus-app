@@ -1100,3 +1100,44 @@ body.pnl .lk{border-radius:20px}
 .dr-st b{display:block;font-size:17px;font-weight:700;line-height:1.25}
 .dr-st small{display:block;margin-top:2px;color:var(--mute);font-size:13px;line-height:1.35}
 .dr-go{flex:none;display:inline-flex;color:var(--mute)}
+
+/* ---------- Davet linkleri: Aktif linkler kapalı şerit + açılır panel, taşma ve düğme düzeltmeleri ---------- */
+body.pnl{overflow-x:clip}
+body.pnl .app-wrap{overflow-x:clip}
+.lk-acc{margin-top:16px}
+.lk-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:0 18px;border:1px solid var(--line);border-radius:20px;background:var(--surface);background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--text);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .3s var(--ease),background .3s var(--ease),transform var(--dur) var(--ease)}
+.lk-tg:active{transform:scale(.985)}
+.lk-acc.open .lk-tg{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.lk-tg-ic{flex:none;display:inline-flex;color:var(--accent)}
+.lk-tg-t{flex:1;min-width:0;font-size:17px;font-weight:600}
+.lk-tg-n{flex:none;min-width:26px;padding:4px 9px;border-radius:999px;background:var(--surface-2);color:var(--accent);font-size:13px;font-weight:700;line-height:1.2;text-align:center}
+.lk-tg-n:empty{display:none}
+.lk-tg-ch{flex:none;display:inline-flex;color:var(--mute);transition:transform .45s var(--ease)}
+.lk-tg-ch svg{fill:none;stroke:currentColor}
+.lk-acc.open .lk-tg-ch{transform:rotate(180deg)}
+.lk-pn{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .5s var(--ease),opacity .35s ease}
+.lk-acc.open .lk-pn{grid-template-rows:1fr;opacity:1}
+.lk-pn-in{min-height:0;min-width:0;overflow:hidden;padding-top:0;transition:padding-top .5s var(--ease)}
+.lk-acc.open .lk-pn-in{padding-top:12px}
+.lk-pn .inv-list{margin-top:0}
+.lk-pn .dv-note{margin-top:12px}
+
+/* Link kartı: taşmayı önle, düğmeleri ve etiketleri hizala */
+.lk,.lk-top,.lk-tx,.lk-hd,.lk-ac{min-width:0}
+.dv .lk{grid-template-columns:minmax(0,1fr)}
+.dv .lk-top{align-items:center;gap:12px}
+.lk-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lk-hd .lk-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-hd .lk-st{align-self:center}
+.dv .lk-chips{flex-wrap:wrap;overflow:visible;margin-top:6px}
+.dv .lk-chip:nth-child(3){display:inline-flex}
+.dv .lk-ac{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dv .lk-ac .btn{width:100%;min-width:0;padding:0 8px;white-space:nowrap}
+.dv .lk-note{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lk-foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
+.lk-foot .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 10px;border-radius:999px;font-size:14px;white-space:nowrap}
+.lk-foot .lk-rf{width:auto;min-height:44px;padding:0 10px;background:transparent;color:var(--text);border:1px solid var(--line)}
+.lk-foot .lk-rf svg{fill:none;stroke:currentColor}
+.lk-foot .lk-rf.spin svg{animation:lgSpin .8s linear infinite}
+.lk-foot .lk-rf span{display:inline}
+@media (prefers-reduced-motion:reduce){.lk-pn,.lk-pn-in,.lk-tg-ch{transition:none}}

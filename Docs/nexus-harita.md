@@ -6,6 +6,7 @@ Kullanıcı Türkçe yazar, telefondan okur, dosyaları telefondan GitHub'a yük
 ---
 
 ## 0. Açık işler
+- **v1.0.28:** Davet linkleri > Aktif linkler kapalı şerit oldu (`#lkAcc`, `#lkTg`, `#lkPn`; dokununca `grid-template-rows` animasyonuyla açılır, yeni link üretilince kendiliğinden açılır). "Tümünü gör" kaldırıldı: tüm linkler panelde, altında Yenile / Hepsini iptal et, bilgi kartı da panelin içinde. Link kartı taşması düzeltildi (`.dv .lk` `minmax(0,1fr)`, ad+etiket aynı satır, çipler sarar, 3 düğme eşit genişlik). `style.css` sonu. `sw.js` v1.0.28. Playwright ile 390px'te denendi; gerçek telefonda denenmedi.
 - **v1.0.27:** panel menüsündeki boş şerit durum kartına çevrildi (`#drSum`, `counts()` çizer): yayında N uygulama (yeşil nokta) · Ana sayfa boş (turuncu, Herkese açık'a gider) · Uygulama yok (gri, Uygulamalar'a gider). `buildDrawer` sonunda da çağrılır. Telefonda denenmedi.
 - **v1.0.26:** panel Önizleme artık yalnız "Herkese açık" işaretli uygulamaları gösterir (`pRender` panelde `a.pub` ile süzer, metinler ana sayfayla aynı; `pubSave` sonrası yeniden çizer). Menüde "Ana sayfayı gör" → "Ana sayfaya git".
 - **v1.0.25:** Davet linkleri tek ekrana yaklaştırıldı: uygulama kartları tek sıra (4'ten fazlası yana kayar), Süre/Kullanım yan yana, karşılama notu tek satır (yazdıkça büyür, sayaç içinde), özet tek satır, Aktif linkler'de yalnız ilk link görünür + "Tümünü gör (N)" (`lkOpen`, `#lkAll`, `#lkMore`), Yenile yalnız ikon, kompakt kart/bilgi kartı. `style.css` sonu "tek ekrana sığdırma". İşlev aynı. Telefonda denenmedi.
