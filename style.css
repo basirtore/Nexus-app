@@ -964,7 +964,7 @@ body.pub{overflow-x:clip}
 .pub-info-go{flex:none;display:inline-flex;color:var(--mute)}
 .pub-err .pub-info-ic{color:var(--warn)}
 .pub-err .pub-info-bd b{color:var(--warn)}
-body.pub .g-ft{padding-top:40px}
+body.pub .g-ft{padding-top:16px}
 
 /* ---------- Tüm sayfalar: dalga arka plan + cam kartlar (panel, durum sayfaları) ---------- */
 body.stp .st-card{z-index:1}
@@ -978,3 +978,9 @@ body.pnl .wk-card,body.pnl .sw-row:not(.chg),body.pnl .lk,body.pnl .nv,body.pnl 
 body.pnl .wk-card{border-radius:20px}
 body.pnl .sw-row{border-radius:18px}
 body.pnl .lk{border-radius:20px}
+
+/* Boş hal: logoda çok hafif ışık nefesi, yörüngede gezen nokta */
+.pub-logo .g-logo{animation:rise .6s var(--ease) both,pubShine 7s 1s ease-in-out infinite}
+@keyframes pubShine{0%,100%{filter:brightness(1)}50%{filter:brightness(1.14) saturate(1.08)}}
+.pub-dot{filter:drop-shadow(0 0 4px currentColor);color:var(--accent-2)}
+@media (prefers-reduced-motion:reduce){.pub-logo .g-logo,.pub-orbit{animation:none}}

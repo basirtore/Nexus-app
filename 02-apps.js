@@ -43,9 +43,14 @@ function appCard(a){
    Kartlar appCard ile çizilir (canlı simge çekme çalışsın diye), her karta rozet ya da bölüm etiketi eklenir. */
 const P_IC_INFO='<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>';
 const P_IC_GRID='<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
+/* Yörüngede yavaşça gezen küçük ışık; hareket azaltma açıksa çizilmez */
+function pDot(){
+  try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return ''}catch(e){}
+  return '<circle class="pub-dot" r="3.2" fill="currentColor"><animateMotion dur="16s" repeatCount="indefinite" path="M10 80a150 46 0 1 0 300 0a150 46 0 1 0 -300 0"/></circle>';
+}
 function pHero(mode){
   const logo=mode==='full'
-    ?'<div class="g-logo-wrap pub-logo"><svg class="pub-orbit" viewBox="0 0 320 160" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><ellipse cx="160" cy="80" rx="150" ry="46" transform="rotate(-14 160 80)"/></svg><img class="g-logo" src="icons/icon-512.png" alt="" width="112" height="112"></div>'
+    ?'<div class="g-logo-wrap pub-logo"><svg class="pub-orbit" viewBox="0 0 320 160" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><g transform="rotate(-14 160 80)"><ellipse cx="160" cy="80" rx="150" ry="46"/>'+pDot()+'</g></svg><img class="g-logo" src="icons/icon-512.png" alt="" width="112" height="112"></div>'
     :'';
   const sub=mode==='full'
     ?'Uygulamalar henüz yayında değil;<br>hazır oldukça burada görünecek.'
@@ -60,7 +65,7 @@ function pRender(){
   if(!n){
     box.innerHTML=APPS_FAIL
       ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bağlantı sorunu</b><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p></div><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+(PANEL?'Henüz Nexus\'ta görünen uygulama yok.':'Birkaç gün sonra tekrar uğrayabilirsin.')+'</p></div><span class="pub-info-go">'+svg(IC_GO,20)+'</span></div>';
+      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+(PANEL?'Henüz Nexus\'ta görünen uygulama yok.':'Birkaç gün sonra tekrar uğrayabilirsin.')+'</p></div></div>';
     return;
   }
   const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+(PANEL?'Nexus Uygulamaları':'Public Uygulamalar')+'</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
