@@ -30,3 +30,9 @@ Yeni bir bölüm için `SECS` listesine satır ekle (id, title, ic).
 3. Worker > Settings > Variables and Secrets > **Secret** olarak üç değer ekle: `ADMIN_KEY` (uzun parola), `CF_ACCOUNT_ID` (hesap kimliği), `CF_API_TOKEN` (yalnız Account > Workers Scripts > Read izinli token). İsteğe bağlı yedek: `CF_SUBDOMAIN`.
 4. Deploy komutu `npx wrangler deploy` olmalı. Sonra `/panel/` adresine gir.
 5. Her uygulamaya `<script src="https://NEXUS-ADRESİ/switcher.js" defer></script>` ekle.
+
+## Lisans
+
+Kod [MIT lisansı](LICENSE.md) altındadır.
+
+**Uygulama simgeleri ve logoları MIT kapsamı dışındadır.** `icons/apps/` klasöründeki görseller ile `panel/vitaflow.png` dahil, uygulamalara ait tüm simge, logo ve marka görselleri © 2026 Basir Töre, tüm hakları saklıdır. İzinsiz kopyalanamaz, değiştirilemez, dağıtılamaz ya da başka bir projede kullanılamaz. Ayrıntı: [ICONS-LICENSE.md](ICONS-LICENSE.md).
