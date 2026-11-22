@@ -58,6 +58,7 @@ function renderApps(){
       :hi?'':'<div class="empty"><p>Henüz uygulama yok.</p></div>';
     return;
   }
+  if(window.NEXUS_GUEST&&typeof gRender==='function'){box.innerHTML=gRender();return}   /* davet sayfası: tek liste (guest.js) */
   box.innerHTML=SECS.map(function(s){
     const list=APPS.filter(function(a){return a.sec===s.id});
     if(!list.length)return '';
