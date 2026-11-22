@@ -123,6 +123,7 @@ async function pubIds(env){try{const a=JSON.parse(await env.LINKS.get('pub')||'[
 const lmax=L=>L.max!=null?(+L.max||0):(L.once?1:0);
 const ttl=L=>L.exp?{expirationTtl:Math.max(60,Math.ceil((L.exp-Date.now())/1000)+3600)}:{};
 
+const SHORT=43200; /* "Beni hatırla" kapalıyken oturum süresi: 12 saat */
 const LIM=10; /* IP başına hatalı deneme hakkı; dolunca son hatadan 10 dk (TTL 600 sn) beklenir, sonra yine LIM hak */
 async function login(req,env){
   const rk='rl:'+(req.headers.get('cf-connecting-ip')||'x');
@@ -136,10 +137,10 @@ async function login(req,env){
   }
   if(n)await env.LINKS.delete(rk);
   await logAdd(req,env);
-  /* Beni hatırla: açık (varsayılan) = 30 gün; kapalı = oturum çerezi (tarayıcı kapanınca biter) */
+  /* Beni hatırla: açık (varsayılan) = 30 gün; kapalı = kısa ömürlü çerez (SHORT sn). Oturum çerezi (Max-Age'siz) telefon tarayıcısında kapanınca silinmediği için kullanılmıyor */
   const keep=b.remember!==false;
   return new Response('{"ok":1}',{headers:{...HD,'content-type':'application/json',
-    'set-cookie':'nx='+await tok(env,await epoch(env))+'; Path=/; HttpOnly; Secure; SameSite=Strict'+(keep?'; Max-Age=2592000':'')}});
+    'set-cookie':'nx='+await tok(env,await epoch(env))+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age='+(keep?2592000:SHORT)}});
 }
 /* Son girişler: KV 'lg' = [{t,d,c}] en yeni başta, en çok 20 (tarih, cihaz, ülke; IP tutulmaz) */
 function devName(ua){
