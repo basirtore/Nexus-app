@@ -20,7 +20,7 @@ const IC_SHARE='<path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h1
 const IC_DOTS='<circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>';
 const IC_INST='<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>';
 const IC_X='<path d="M6 6l12 12M18 6L6 18"/>';
-function sic(p){return svg(p,18,'st-ic')}
+function sic(p){return svg(p,18,'stp-ic')}
 
 const STEPS={
   ios:[
@@ -62,7 +62,7 @@ function renderSheet(){
     +'</div>'
     +'<div class="seg" role="group" aria-label="Cihaz türü">'+tabs+'</div>'
     +'<ol class="steps">'+steps+'</ol>'
-    +'<p class="sh-note">Ekledikten sonra uygulama ana ekranından kendi başına, tam ekran açılır.'+(oneTap?' <b>Aç ve yükle</b> siteyi açar; üstte çıkan <b>Uygulamayı yükle</b> düğmesine dokunman yeter. Düğme çıkmazsa yukarıdaki adımları izle.':'')+'</p>'
+    +'<p class="sh-note">'+(oneTap?'<b>Aç ve yükle</b> siteyi açar; üstte çıkan <b>Yükle</b> kartına dokunman yeter. Kart çıkmazsa yukarıdaki adımları izle. ':'')+'Ekledikten sonra uygulama ana ekranından tam ekran açılır.</p>'
     +'<div class="sh-ac">'+go+'</div>';
 }
 
