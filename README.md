@@ -35,4 +35,4 @@ Yeni bir bölüm için `SECS` listesine satır ekle (id, title, ic).
 
 Kod [MIT lisansı](LICENSE.md) altındadır.
 
-**Uygulama simgeleri ve logoları MIT kapsamı dışındadır.** `icons/apps/` klasöründeki görseller ile `panel/vitaflow.png` dahil, uygulamalara ait tüm simge, logo ve marka görselleri © 2026 Basir Töre, tüm hakları saklıdır. İzinsiz kopyalanamaz, değiştirilemez, dağıtılamaz ya da başka bir projede kullanılamaz. Ayrıntı: [ICONS-LICENSE.md](ICONS-LICENSE.md).
+**Uygulama simgeleri ve logoları MIT kapsamı dışındadır.** `icons/apps/` klasöründeki görseller dahil, uygulamalara ait tüm simge, logo ve marka görselleri © 2026 Basir Töre, tüm hakları saklıdır. İzinsiz kopyalanamaz, değiştirilemez, dağıtılamaz ya da başka bir projede kullanılamaz. Ayrıntı: [ICONS-LICENSE.md](ICONS-LICENSE.md).
