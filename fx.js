@@ -27,12 +27,12 @@ function themeGet(){
     const t=localStorage.getItem(THEME_KEY);
     if(THEMES.some(function(o){return o.id===t}))return t;
   }catch(e){}
-  return 'auto';
+  return 'midnight';   /* varsayılan: Gece. Otomatik seçilirse 'auto' açıkça saklanır */
 }
 function themeName(){
   const id=themeGet();
   const o=THEMES.find(function(x){return x.id===id});
-  return o?o.t:'Otomatik';
+  return o?o.t:'Gece';
 }
 function themeApply(id){
   const h=document.documentElement;
@@ -46,7 +46,7 @@ function themeApply(id){
 function themeSet(id){
   const h=document.documentElement;
   h.classList.add('tx');                    /* geçiş yumuşak olsun */
-  try{if(id==='auto')localStorage.removeItem(THEME_KEY);else localStorage.setItem(THEME_KEY,id)}catch(e){}
+  try{localStorage.setItem(THEME_KEY,id)}catch(e){}
   themeApply(id);
   setTimeout(function(){h.classList.remove('tx')},500);
 }

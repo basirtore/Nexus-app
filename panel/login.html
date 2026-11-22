@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Nexus Panel · Giriş</title>
-<script>try{var t=localStorage.getItem("nexus.theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script>var t="midnight";try{t=localStorage.getItem("nexus.theme")||t}catch(e){}if(t!=="auto")document.documentElement.setAttribute("data-theme",t)</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="stp">

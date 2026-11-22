@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>try{var t=localStorage.getItem("nexus.theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script>var t="midnight";try{t=localStorage.getItem("nexus.theme")||t}catch(e){}if(t!=="auto")document.documentElement.setAttribute("data-theme",t)</script>
 <script>
 /* Telefonda konsol olmadığı için hatayı ekranda küçük bir bantla göster */
 window.onerror=function(msg,src,line){
