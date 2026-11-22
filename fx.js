@@ -8,7 +8,8 @@
 
 /* GitHub deposu "kullanici/depo" biçiminde. Boşsa "Son push" gösterilmez.
    Depo herkese açık olmalı (gizli depoda GitHub yanıt vermez; son bilinen değer gösterilir). */
-const GH_REPO='https://github.com/basirtore/Nexus-app';
+const GH_REPO=('basirtore/Nexus-app')
+  .replace(/^https?:\/\/(www\.)?github\.com\//i,'').replace(/^\/+|\/+$/g,'').replace(/\.git$/i,'');   /* tam adres yazılsa da "kullanici/depo"ya çevrilir */
 
 const THEME_KEY='nexus.theme';
 const THEMES=[
