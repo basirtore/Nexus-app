@@ -944,3 +944,24 @@ body.g .app-add{width:40px;height:28px;border-radius:0;border-right:1px solid va
 .g-ft-nm{display:flex;align-items:center;gap:10px;color:var(--text);font-size:20px}
 .g-ft-nm img{border-radius:9px}
 .g-ft-nm b{font-weight:800}
+
+/* ---------- Ana sayfa (herkese açık) · ilk görseldeki tasarım ---------- */
+body.pub .top{position:relative;z-index:1}
+.pub-hero{padding:8px 8px 22px}
+.pub-hero.pub-full{padding-top:20px;padding-bottom:30px}
+.pub-logo{margin-bottom:6px}
+.pub-logo .g-logo{width:112px;height:112px;border-radius:30px}
+.pub-orbit{position:absolute;left:50%;top:50%;width:min(86vw,360px);height:auto;transform:translate(-50%,-50%);color:var(--accent);opacity:.55;pointer-events:none;animation:pubOrbit 6s ease-in-out infinite}
+@keyframes pubOrbit{0%,100%{opacity:.4;transform:translate(-50%,-50%) rotate(0)}50%{opacity:.7;transform:translate(-50%,-50%) rotate(1.5deg)}}
+body.pub{overflow-x:clip}
+.pub-h{font-size:34px;letter-spacing:-.02em}
+.pub-sub{font-size:17px;line-height:1.55}
+.pub-info{display:flex;align-items:center;gap:16px;padding:18px 18px 18px 16px;border:1px solid var(--line);border-color:color-mix(in srgb,var(--accent) 38%,var(--line));border-radius:22px;background:var(--surface);background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 14px 34px -18px var(--glow-a);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:rise .6s .2s var(--ease) both}
+.pub-info-ic{flex:none;display:inline-flex;color:var(--accent)}
+.pub-info-bd{flex:1;min-width:0}
+.pub-info-bd b{display:block;color:var(--accent);font-size:16px;font-weight:700}
+.pub-info-bd p{margin-top:2px;color:var(--mute);font-size:15px;line-height:1.4}
+.pub-info-go{flex:none;display:inline-flex;color:var(--mute)}
+.pub-err .pub-info-ic{color:var(--warn)}
+.pub-err .pub-info-bd b{color:var(--warn)}
+body.pub .g-ft{padding-top:40px}

@@ -39,10 +39,44 @@ function appCard(a){
   +'</article>';
 }
 
+/* Ana sayfa (herkese açık): ilk görseldeki tasarım. Boş hal = büyük logo + bilgilendirme kartı; dolu hal = tek liste.
+   Kartlar appCard ile çizilir (canlı simge çekme çalışsın diye), her karta rozet ya da bölüm etiketi eklenir. */
+const P_IC_INFO='<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>';
+const P_IC_GRID='<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>';
+function pHero(mode){
+  const logo=mode==='full'
+    ?'<div class="g-logo-wrap pub-logo"><svg class="pub-orbit" viewBox="0 0 320 160" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><ellipse cx="160" cy="80" rx="150" ry="46" transform="rotate(-14 160 80)"/></svg><img class="g-logo" src="icons/icon-512.png" alt="" width="112" height="112"></div>'
+    :'';
+  const sub=mode==='full'
+    ?'Uygulamalar henüz yayında değil;<br>hazır oldukça burada görünecek.'
+    :'İşte senin için sunulan uygulamalar.';
+  return logo+'<h1 class="g-h pub-h">Nexus\'a <em>hoş geldin.</em></h1><p class="g-sub pub-sub">'+sub+'</p>';
+}
+function pRender(){
+  const hero=$('#pubHero'),ft=$('#ftTx'),n=APPS.length;
+  if(hero){hero.classList.toggle('pub-full',n===0);hero.innerHTML=pHero(n===0?'full':'list')}
+  if(ft)ft.textContent=n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
+  const box=$('#v-apps');
+  if(!n){
+    box.innerHTML=APPS_FAIL
+      ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bağlantı sorunu</b><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p></div><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
+      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>Birkaç gün sonra tekrar uğrayabilirsin.</p></div><span class="pub-info-go">'+svg(IC_GO,20)+'</span></div>';
+    return;
+  }
+  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">Public Uygulamalar</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
+  const cards=APPS.map(function(a){
+    const sc=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
+    const tag=a.badge&&a.sec!=='arch'?a.badge:sc.title;
+    return appCard(Object.assign({},a,{badge:''})).replace('</p></div>','</p><span class="g-tag">'+svg(sc.ic,13)+esc(tag)+'</span></div>');
+  }).join('');
+  box.innerHTML='<section class="sec">'+hd+'<div class="sec-list">'+cards+'</div></section>';
+}
+
 function renderApps(){
   const box=$('#v-apps');
   if(!box)return;
-  const hi=$('#hello');   /* karşılama notu yalnız ana sayfada var; metni uygulama sayısına göre değişir */
+  if(window.NEXUS_PUB&&!PANEL&&!window.NEXUS_GUEST){pRender();return}
+  const hi=$('#hello');   /* panel önizlemesindeki eski karşılama notu */
   if(hi){
     const n=APPS.length,t=$('#helloTx');
     hi.classList.toggle('off',APPS_FAIL);
