@@ -21,6 +21,78 @@
     if(m>=60){const h=Math.floor(m/60),n=m%60;return h+' sa'+(n?' '+n+' dk':'')}
     return Math.max(m,1)+' dk';
   }
+  /* Evet / Hayır onay penceresi (tarayıcının kendi confirm() kutusu yerine).
+     ask({t:başlık, d:açıklama, bad:1=kırmızı Evet}) → Promise<boolean>; Hayır, dışa dokunma ve Escape = false */
+  let cfRes=null,cfSt=null;
+  function cfEl(){
+    let el=$('#cf');
+    if(el)return el;
+    el=document.createElement('div');
+    el.id='cf';
+    el.className='cf';
+    el.setAttribute('role','alertdialog');
+    el.setAttribute('aria-modal','true');
+    el.setAttribute('aria-labelledby','cfT');
+    el.setAttribute('aria-describedby','cfD');
+    el.setAttribute('aria-hidden','true');
+    el.innerHTML='<div class="cf-bg" data-cf="0"></div><div class="cf-p"><span class="cf-ic">'+svg(IC_HELP,26)+'</span>'
+      +'<h3 id="cfT" class="cf-t"></h3><p id="cfD" class="cf-d"></p>'
+      +'<div class="cf-ac"><button class="btn btn-sec cf-b" type="button" data-cf="0">Hayır</button>'
+      +'<button class="btn btn-pri cf-b cf-yes" type="button" data-cf="1">Evet</button></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click',function(e){
+      const t=e.target.closest('[data-cf]');
+      if(t)cfClose(t.dataset.cf==='1');
+    });
+    window.addEventListener('keydown',function(e){
+      if(!cfRes)return;
+      if(e.key==='Escape'){e.stopPropagation();e.preventDefault();cfClose(false)}
+      else if(e.key==='Tab'){
+        const b=$$('.cf-b',el),i=b.indexOf(document.activeElement);
+        e.preventDefault();
+        b[(i+(e.shiftKey?-1:1)+b.length)%b.length].focus();
+      }
+    },true);
+    return el;
+  }
+  function ask(o){
+    return new Promise(function(res){
+      const el=cfEl();
+      if(cfRes)cfClose(false);
+      $('#cfT').textContent=o.t||'Emin misin?';
+      $('#cfD').textContent=o.d||'';
+      el.classList.toggle('bad',!!o.bad);
+      /* arkadaki ekranlar (ana sayfa, açık pencere) etkisiz; kapanınca eski durum geri gelir */
+      const app=$('#app'),sh=$('#sheet');
+      cfSt={app:app&&app.inert,sh:sh&&sh.inert,lock:document.documentElement.classList.contains('lock'),from:document.activeElement};
+      if(app)app.inert=true;
+      if(sh)sh.inert=true;
+      document.documentElement.classList.add('lock');
+      cfRes=res;
+      el.setAttribute('aria-hidden','false');
+      void el.offsetWidth;
+      el.classList.add('open');
+      vib(12);
+      $('.cf-b',el).focus({preventScroll:true});   /* odak güvenli seçenekte: Hayır */
+    });
+  }
+  function cfClose(v){
+    const el=$('#cf');
+    if(!el||!cfRes)return;
+    const r=cfRes;
+    cfRes=null;
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden','true');
+    const app=$('#app'),sh=$('#sheet');
+    if(cfSt){
+      if(app)app.inert=!!cfSt.app;
+      if(sh)sh.inert=!!cfSt.sh;
+      if(!cfSt.lock)document.documentElement.classList.remove('lock');
+      if(cfSt.from&&cfSt.from.focus){try{cfSt.from.focus({preventScroll:true})}catch(x){}}
+    }
+    cfSt=null;
+    r(v);
+  }
   /* Alttan açılan pencere (Yükle ve Ayarlar ile aynı kabuk): html + açılınca çalışacak kurulum */
   function popSheet(html,mount){
     const sb=$('#sheetBody');
@@ -58,7 +130,7 @@
         const av=$('.wk-card[data-w="'+it.w+'"] .wk-av',box);
         if(av){av.classList.add('has-img');av.innerHTML='<img src="'+esc(p.src)+'" alt="" width="46" height="46">'}
       };
-      p.src=src+(src.indexOf('?')>=0?'&':'?')+'h='+Math.floor(Date.now()/3600000);
+      p.src=src+(src.indexOf('?')>=0?'&':'?')+'h='+liveBust();
     });
   }
   /* i verilirse kart sırayla belirir (ilk çizim); verilmezse sessizce yenilenir */
@@ -158,14 +230,16 @@
     function(b){
       const rm=$('#edDel',b);
       if(rm)rm.addEventListener('click',function(){
-        if(!confirm('"'+(it.name||w)+'" Nexus listesinden silinsin mi?'+(wkChanged().length?' Kaydedilmemiş diğer değişiklikler de gider.':'')))return;
-        rm.disabled=true;
-        api('POST','apps',{items:[],del:[w]}).then(function(j){
-          if(!j.ok){toast(j.e||'Silinemedi','err');rm.disabled=false;return}
-          if(!j.deleted){toast('Silinmedi','err','Worker Cloudflare\'de hâlâ görünüyor');rm.disabled=false;return}
-          try{sessionStorage.setItem('nx.msg','1')}catch(e){}
-          location.reload();
-        }).catch(function(){toast('Silinemedi','err','Bağlantını kontrol et');rm.disabled=false});
+        ask({t:'Listeden silinsin mi?',d:'"'+(it.name||w)+'" Nexus listesinden silinir.'+(wkChanged().length?' Kaydedilmemiş diğer değişiklikler de gider.':''),bad:1}).then(function(y){
+          if(!y)return;
+          rm.disabled=true;
+          api('POST','apps',{items:[],del:[w]}).then(function(j){
+            if(!j.ok){toast(j.e||'Silinemedi','err');rm.disabled=false;return}
+            if(!j.deleted){toast('Silinmedi','err','Worker Cloudflare\'de hâlâ görünüyor');rm.disabled=false;return}
+            try{sessionStorage.setItem('nx.msg','1')}catch(e){}
+            location.reload();
+          }).catch(function(){toast('Silinemedi','err','Bağlantını kontrol et');rm.disabled=false});
+        });
       });
       $('#edS',b).addEventListener('click',function(e){
         const t=e.target.closest('[data-sec]');
@@ -223,6 +297,7 @@
   const IC_HOME='<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>';
   const IC_OUT='<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>';
   const IC_CLOSE='<path d="M6 6l12 12M18 6L6 18"/>';
+  const IC_HELP='<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2.9-1.2 1.8M12 16.6h.01"/>';
   const IC_CHECK='<path d="M5 12.5l4.5 4.5L19 7.5"/>';
   const IC_CLOCK='<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>';
   const IC_REPEAT='<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>';
@@ -283,8 +358,7 @@
     +item('uyg','Uygulamalar',IC_SLIDERS,'apps')
     +item('bilgi','Bilgi',IC_INFO,'')
     +'<a class="dr-it" href="/">'+svg(IC_HOME,24)+'<span class="dr-t">Ana sayfaya git</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></a>'
-    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,24)+'<span class="dr-t">Çıkış</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></button></div>'
-    +'<div class="dr-ft"><img src="icons/icon-192.png" alt="" width="44" height="44"><div><b>Nexus</b><span>Daha fazlası için, her zaman seninle.</span></div></div>';
+    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,24)+'<span class="dr-t">Çıkış</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></button></div>';
     counts();
   }
   function counts(){
@@ -376,7 +450,11 @@
     else if(a==='nav'){closeDr();location.hash=t.dataset.v}
     else if(a==='jump'){vib(10);location.hash=t.dataset.to}
     else if(a==='mout'){api('POST','logout',{}).then(function(){location.href='/'})}
-    else if(a==='lgall'){if(confirm('Bu cihaz dahil tüm cihazlardaki oturumlar kapatılsın mı?'))api('POST','logout-all',{}).then(function(){location.href='/'})}
+    else if(a==='lgall'){
+      ask({t:'Tüm cihazlardan çıkılsın mı?',d:'Bu cihaz dahil, tüm cihazlardaki oturumlar kapatılır. Tekrar girmek için yönetici anahtarı gerekir.',bad:1}).then(function(y){
+        if(y)api('POST','logout-all',{}).then(function(){location.href='/'})
+      });
+    }
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDr()});
   buildDrawer();
@@ -391,7 +469,7 @@
   function build(){
   const tiles=APPS.map(function(a){
     return '<label class="ap-tile"><input type="checkbox" name="ap" value="'+esc(a.id)+'">'
-    +'<img src="'+esc(localIcon(a))+'" alt="" width="52" height="52"><span>'+esc(a.name)+'</span>'
+    +'<img src="'+esc(icUrl(a))+'" alt="" width="30" height="30" data-ic="'+esc(a.id)+'"><span>'+esc(a.name)+'</span>'
     +'<i class="ap-ck">'+svg(IC_CHECK,14)+'</i></label>';
   }).join('');
   function fld(k,ic,lb){
@@ -400,7 +478,7 @@
     +'<span class="fld-ch">'+svg(IC_CHEV,16)+'</span></button>';
   }
   const pubs=APPS.map(function(a){
-    return '<label class="sw-row" data-id="'+esc(a.id)+'"><img class="sw-ic" src="'+esc(localIcon(a))+'" alt="" width="40" height="40">'
+    return '<label class="sw-row" data-id="'+esc(a.id)+'"><img class="sw-ic" src="'+esc(icUrl(a))+'" alt="" width="40" height="40" data-ic="'+esc(a.id)+'">'
     +'<span class="sw-tx">'+esc(a.name)+'<small>'+esc(a.desc||'')+'</small></span>'
     +'<input class="sw" type="checkbox" name="pb" value="'+esc(a.id)+'"'+(a.pub?' checked':'')+' aria-label="'+esc(a.name)+' herkese açık"></label>';
   }).join('');
@@ -430,7 +508,8 @@
   +'<img class="dv-logo" src="icons/icon-512.png" alt="" width="104" height="104"></div></div>'
   +'<form id="admF" class="nv dv-card" novalidate>'
   +'<div class="dv-ch"><span class="dv-ch-ic">'+svg(IC_LINK,24)+'</span><h3 class="dv-ch-t">Link oluşturma ayarları</h3></div>'
-  +'<div><div class="nv-h"><span>Paylaşılacak uygulamalar</span><b id="nvCnt"></b></div>'
+  +'<div><div class="nv-h"><span>Paylaşılacak uygulamalar</span><span class="nv-r"><b id="nvCnt"></b>'
+  +(APPS.length>1?'<button class="nv-all" type="button" data-adm="apall" id="nvAll"></button>':'')+'</span></div>'
   +(APPS.length?'<div class="ap-grid">'+tiles+'</div>':'<p class="inf-note">Henüz Nexus\'ta görünen uygulama yok. Menüden Uygulamalar ekranına girip istediklerini aç.</p>')
   +'</div>'
   +'<div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div>'
@@ -449,8 +528,7 @@
   +'</div></div></div></section>'
   +'<section class="sec" data-v="durum">'
   +hero('',0,'Uygulama <em>durumu</em>','Uygulamalarının güncel durumunu buradan görüntüleyebilirsin.')
-  +'<div id="admS"></div>'
-  +'<div class="adm-row pg-row"><button class="btn btn-sec pg-btn" type="button" data-adm="st">'+svg(IC_REFRESH,18)+'Durumu yenile</button></div></section>'
+  +'<div id="admS"></div></section>'
   +'<section class="sec" data-v="bilgi">'
   +hero('Uygulama Bilgileri',IC_INFO,'<em>Nexus</em>','Daha fazlası için, her zaman seninle.')
   +'<div class="info-hero"><span class="info-lg"><img class="info-logo" src="icons/icon-192.png" alt="" width="64" height="64"></span>'
@@ -545,7 +623,7 @@
   function lkCard(L){
     const now=Date.now(),m=L.exp?Math.round((L.exp-now)/60000):0,mx=L.max||0,hits=L.hits||0;
     const ap=L.apps.map(function(id){return APPS.find(function(x){return x.id===id})}).filter(Boolean);
-    const ics=ap.slice(0,4).map(function(a){return '<img src="'+esc(localIcon(a))+'" alt="" width="36" height="36">'}).join('');
+    const ics=ap.slice(0,4).map(function(a){return '<img src="'+esc(icUrl(a))+'" alt="" width="36" height="36" data-ic="'+esc(a.id)+'">'}).join('');
     const chip=function(ic,t,c){return '<span class="lk-chip'+(c?' '+c:'')+'">'+svg(ic,13)+esc(t)+'</span>'};
     const chips=(L.exp?(m<=0?chip(IC_CLOCK,'Süresi doldu','warn'):chip(IC_CLOCK,fmtS(m)+' kaldı')):chip(IC_CLOCK,'Süresiz'))
       +chip(IC_REPEAT,mx?hits+' / '+mx+' kullanıldı':hits+' açılış')
@@ -578,6 +656,7 @@
         +'<div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button>'
         +(rows.length>1?'<button class="btn btn-sec lk-del" type="button" data-adm="clr">Hepsini iptal et</button>':'')+'</div>'
         :'<p class="inf-note">Aktif link yok.</p><div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button></div>';
+      liveApply($('#admL'));
       tx('#lkCnt',rows.length||'');
       tx('[data-cnt="davet"]',rows.length||'');
       return true;
@@ -592,7 +671,9 @@
   const MAXM=525600;   /* en çok 365 gün */
   function invUp(){
     const n=$$('input[name=ap]:checked',box).length;
-    tx('#nvCnt',n?n+' seçildi':'Seçilmedi');
+    const tot=$$('input[name=ap]',box).length;
+    tx('#nvCnt',n+'/'+tot);
+    tx('#nvAll',n&&n===tot?'Temizle':'Tümü');
     tx('#fv-dur',fmtM(inv.mins));
     tx('#fv-use',inv.max?inv.max+' kullanım':'Sınırsız');
     $('#nvSum').innerHTML=(n?'<b>'+n+' uygulama</b>'+(n>1?' (paket)':''):'<b>Uygulama seç</b>')
@@ -660,6 +741,7 @@
   }
   /* Durum tarayıcıdan ölçülür: Worker'dan başka workers.dev adresine istek atmak Cloudflare'de engelli.
      Kartlar hemen çizilir, her uygulama yanıtlayınca kendi satırı ve özet güncellenir. */
+  let stRun=0;
   function status(){
     const el=$('#admS');
     const n=APPS.length;
@@ -667,16 +749,20 @@
     el.innerHTML='<div class="stx-sum" id="stSum"><div class="stx-ring" id="stRing"><span id="stPct"></span></div>'
       +'<div class="stx-tx"><div class="stx-big" id="stBig"></div><div class="stx-small" id="stSm"></div></div>'
       +'<svg class="stx-ekg" viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 30h38l7-18 10 40 9-30 6 8h50"/></svg></div>'
-      +sh(IC_APPS,'Uygulama Durumları','<span class="pg-pill pg-cnt">'+n+' Uygulama</span>')
+      +sh(IC_APPS,'Uygulama Durumları','<button class="pg-pill pg-ic" id="stRf" type="button" data-adm="st" aria-label="Durumu yenile" title="Durumu yenile">'+svg(IC_REFRESH,18)+'</button>')
       +'<div class="stx-list">'+APPS.map(function(a){
-        return '<a class="stx" data-st="'+esc(a.id)+'" href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="stx-ic" src="'+esc(localIcon(a))+'" alt="" width="52" height="52">'
+        return '<a class="stx" data-st="'+esc(a.id)+'" href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="stx-ic" src="'+esc(icUrl(a))+'" alt="" width="52" height="52" data-ic="'+esc(a.id)+'">'
         +'<div class="stx-bd"><div class="stx-nm">'+esc(a.name)+'</div><div class="stx-ms">Bekleniyor…</div></div>'
         +'<span class="stx-pill wait">Kontrol</span><i class="stx-go">'+svg(IC_GO,18)+'</i></a>';
       }).join('')+'</div>'
       +'<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><div class="pg-nt"><b>Durum Bilgisi</b><p id="stNt"></p></div><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>';
     let done=0,up=0;
+    const run=++stRun;   /* yenileyince eski kontrolün geç gelen yanıtları yeni ekranı bozmasın */
     function upd(){
+      if(run!==stRun)return;
       const fin=done>=n;
+      const rf=$('#stRf');
+      if(rf){rf.classList.toggle('spin',!fin);rf.disabled=!fin}
       $('#stRing').style.setProperty('--p',Math.round(up/n*100));
       $('#stPct').textContent=fin?Math.round(up/n*100)+'%':done+'/'+n;
       $('#stBig').innerHTML=!fin?'Kontrol ediliyor…':up===n?'Hepsi çalışıyor<i class="stx-ok">'+svg(IC_CHECKC,22)+'</i>':up+' / '+n+' çalışıyor';
@@ -685,6 +771,7 @@
       $('#stSum').classList.toggle('bad',fin&&up<n);
     }
     upd();
+    liveApply(el);
     APPS.forEach(function(a){
       const t=Date.now(),c=new AbortController(),to=setTimeout(function(){c.abort()},6000);
       fetch(a.url,{mode:'no-cors',cache:'no-store',signal:c.signal})
@@ -692,6 +779,7 @@
         .catch(function(){return {ok:false,ms:0}})
         .then(function(r){
           clearTimeout(to);
+          if(run!==stRun)return;
           done++;if(r.ok)up++;
           const row=$('.stx[data-st="'+a.id+'"]',el);
           if(row){
@@ -726,12 +814,21 @@
       n.forEach(function(x){x.checked=!all});
       vib(10);pubSync();
     }
+    else if(a==='apall'){
+      const n=$$('input[name=ap]',box),all=n.every(function(x){return x.checked});
+      n.forEach(function(x){x.checked=!all;x.closest('.ap-tile').classList.toggle('on',x.checked)});
+      vib(10);invUp();
+    }
     else if(a==='pbsave'){pubSave()}
     else if(a==='pbundo'){pubUndo()}
     else if(a==='lgmore'){lgAll=!lgAll;lgRender()}
     else if(a==='sh'){if(navigator.share)navigator.share({url:t.dataset.u}).catch(function(){});else toast('Paylaşım yok, kopyala')}
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
-    else if(a==='clr'){if(confirm('Tüm linkler iptal edilsin mi?'))api('POST','links/clear',{}).then(list)}
+    else if(a==='clr'){
+      ask({t:'Tüm linkler iptal edilsin mi?',d:'Aktif olan bütün davet linkleri hemen çalışmaz hale gelir.',bad:1}).then(function(y){
+        if(y)api('POST','links/clear',{}).then(list)
+      });
+    }
     else if(a==='st'){status();list()}
     else if(a==='tg'){vib(10);lkToggle()}
     else if(a==='rf'){
@@ -739,7 +836,10 @@
       t.classList.add('spin');t.disabled=true;
       list().then(function(ok){if(ok)toast('Linkler güncellendi','ok')}).then(function(){t.classList.remove('spin');t.disabled=false});
     }
-    else if(a==='wk'){if(wkChanged().length&&!confirm('Kaydedilmemiş değişiklikler silinsin mi?'))return;wkLoad(true)}
+    else if(a==='wk'){
+      if(!wkChanged().length){wkLoad(true);return}
+      ask({t:'Değişiklikler silinsin mi?',d:'Kaydedilmemiş değişiklikler listeyi yenileyince gider.',bad:1}).then(function(y){if(y)wkLoad(true)});
+    }
   });
   box.addEventListener('click',function(e){
     const t=e.target.closest('[data-pop]');

@@ -10,10 +10,22 @@ let liveBusy=false;
 
 function localIcon(a){return a.iconLocal||('icons/apps/'+a.id+'.png')}
 
-/* Saatlik önbellek kırıcı: simge değişirse en geç 1 saatte görünür */
+/* Dakikalık önbellek kırıcı: uygulamanın simgesi değişirse en geç 1 dakikada görünür */
+function liveBust(){return Math.floor(Date.now()/60000)}
 function liveIconUrl(a){
   const sep=a.icon.indexOf('?')>=0?'&':'?';
-  return a.url+a.icon+sep+'h='+Math.floor(Date.now()/3600000);
+  return a.url+a.icon+sep+'h='+liveBust();
+}
+
+/* Canlı simge önbelleği (id → adres): loadLive doldurur; panelde sonradan çizilen her ekran
+   (Herkese açık, Davet linkleri, Durum) simgeyi buradan alır. Simgesi olan her <img> data-ic taşır. */
+const LIVE={};
+function icUrl(a){return LIVE[a.id]||localIcon(a)}
+function liveApply(root){
+  $$('img[data-ic]',root).forEach(function(img){
+    const u=LIVE[img.dataset.ic];
+    if(u&&img.getAttribute('src')!==u){img.src=u;img.classList.add('live')}
+  });
 }
 
 function svg(p,size,cls){
@@ -58,11 +70,10 @@ function pHero(mode){
   return logo+'<h1 class="g-h pub-h">Nexus\'a <em>hoş geldin.</em></h1><p class="g-sub pub-sub">'+sub+'</p>';
 }
 function pRender(){
-  const hero=$('#pubHero'),ft=$('#ftTx');
+  const hero=$('#pubHero');
   const list=PANEL?APPS.filter(function(a){return a.pub}):APPS;   /* panel önizlemesi = ana sayfada herkesin göreceği liste */
   const n=list.length;
   if(hero){hero.classList.toggle('pub-full',n===0);hero.innerHTML=pHero(n===0?'full':'list')}
-  if(ft)ft.textContent=n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
   const box=$('#v-apps');
   if(!n){
     box.innerHTML=APPS_FAIL
@@ -162,14 +173,16 @@ function loadLive(force){
     updNet(ok);
   }
   APPS.forEach(function(a){
-    const img=$('img[data-ic="'+a.id+'"]');
-    if(!img){fin();return}
     const p=new Image();
     p.onload=function(){
       /* Bozuk/minik görsel kayıtlı simgenin yerine geçmesin */
       if(p.naturalWidth>=64&&p.naturalHeight>=64){
-        img.style.opacity='0';
-        setTimeout(function(){img.src=p.src;img.classList.add('live');img.style.opacity=''},150);
+        LIVE[a.id]=p.src;
+        $$('img[data-ic="'+a.id+'"]').forEach(function(img){
+          if(img.getAttribute('src')===p.src)return;
+          img.style.opacity='0';
+          setTimeout(function(){img.src=p.src;img.classList.add('live');img.style.opacity=''},150);
+        });
         ok++;
       }
       fin();
