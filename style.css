@@ -681,6 +681,11 @@ button.kv-r:active{background:var(--surface-2)}
 .chip svg{color:var(--accent)}
 .g-note{position:relative;margin:0 0 20px;padding:20px 20px 18px 22px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 75%);font-size:16px;line-height:1.55;animation:rise .6s .26s var(--ease) both}
 .g-note::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:0 4px 4px 0;background:linear-gradient(var(--accent),var(--accent-2))}
+/* Ana sayfa karşılama notu: sade, küçük */
+.hello{position:relative;margin:4px 0 18px;padding:14px 16px 14px 20px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--text);font-size:15px;line-height:1.5}
+.hello::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.hello-lb{display:block;margin-bottom:4px;color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.08em}
+.hello b{font-weight:700}
 .g-note-lb{display:block;margin-bottom:6px;color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.08em}
 body.g .sec{margin-top:0}
 body.g .sec+.sec{margin-top:24px}

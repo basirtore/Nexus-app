@@ -1,4 +1,4 @@
-const VER='v1.0.4';
+const VER='v1.0.5';
 const CACHE='nexus-'+VER;
 const CORE=['style.css','apps.js','switcher.js','01-core.js','02-apps.js','03-install.js','04-boot.js','fx.js','manifest.json','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','icons/apps/life.png','icons/apps/health.png','icons/apps/jurnalist.png','icons/apps/edgeflow.png','icons/apps/vitaflow.png'];
 

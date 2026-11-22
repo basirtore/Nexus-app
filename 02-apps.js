@@ -42,6 +42,8 @@ function appCard(a){
 function renderApps(){
   const box=$('#v-apps');
   if(!box)return;
+  const hi=$('#hello');   /* karşılama notu yalnız ana sayfada var; liste doluysa görünür */
+  if(hi)hi.classList.toggle('off',!APPS.length);
   if(!APPS.length){
     box.innerHTML=APPS_FAIL
       ?'<div class="empty"><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
