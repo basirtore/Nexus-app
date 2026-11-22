@@ -68,14 +68,10 @@ window.onerror=function(msg,src,line){
 <script src="fx.js"></script>
 <script src="04-boot.js"></script>
 <script>
-/* Eski servis çalışanı eski dosyaları önbellekten verebilir: güncelle, yenisi devralınca bir kez yeniden yükle */
+/* Servis çalışanı yalnız önbellek için kayıt olur. Sayfayı ASLA otomatik yeniden yükleme: davet linki her açılışta
+   bir kullanım hakkı düşer, yeniden yükleme tek kullanımlık linki geçersiz kılar ve N kullanımlıkta fazladan hak harcar. */
 if('serviceWorker' in navigator){
-  var k='nxg-reload';
   navigator.serviceWorker.register('sw.js').then(function(r){r.update()}).catch(function(){});
-  navigator.serviceWorker.addEventListener('controllerchange',function(){
-    try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}
-    location.reload();
-  });
 }
 </script>
 </body>

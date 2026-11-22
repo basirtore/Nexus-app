@@ -32,7 +32,8 @@ loadApps=function(){
     const ch=document.getElementById('gChips');
     if(ch){
       ch.innerHTML=(j.exp?gChip(G_IC_CLOCK,gLeft(j.exp)):gChip(G_IC_INF,'Süresiz link'))
-        +(j.once?gChip(G_IC_ONCE,'Tek kullanımlık · sayfayı yenileme'):'');
+        +(j.max===1||(!j.max&&j.once)?gChip(G_IC_ONCE,'Tek kullanımlık · sayfayı yenileme')
+          :j.max>1?gChip(G_IC_ONCE,(j.left>0?j.left+' hak kaldı':'Son hak')+' · yenileme hak harcar'):'');
     }
   });
 };

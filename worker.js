@@ -117,6 +117,8 @@ async function appList(env){
 const appFull=appList;
 /* Herkese açık liste: KV 'pub' = [id,...]; panelde işaretlenir (POST /api/public) */
 async function pubIds(env){try{const a=JSON.parse(await env.LINKS.get('pub')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+/* Kullanım sınırı: L.max (0 = sınırsız). Eski kayıtlardaki once:true tek kullanım sayılır */
+const lmax=L=>L.max!=null?(+L.max||0):(L.once?1:0);
 const ttl=L=>L.exp?{expirationTtl:Math.max(60,Math.ceil((L.exp-Date.now())/1000)+3600)}:{};
 
 const LIM=10; /* IP başına hatalı deneme hakkı; dolunca son hatadan 10 dk (TTL 600 sn) beklenir, sonra yine LIM hak */
@@ -148,7 +150,7 @@ async function api(req,env,u,p){
   if(p==='/api/links'&&m==='GET'){
     const cs=await codes(env);
     const rows=await Promise.all(cs.map(async c=>{
-      try{const L=JSON.parse(await env.LINKS.get('l:'+c));if(!L)return null;L.code=c;return L}catch(e){return null}
+      try{const L=JSON.parse(await env.LINKS.get('l:'+c));if(!L)return null;L.code=c;L.max=lmax(L);return L}catch(e){return null}
     }));
     const ok=rows.filter(Boolean);
     if(ok.length!==cs.length)await idxSet(env,ok.map(L=>L.code));
@@ -159,9 +161,11 @@ async function api(req,env,u,p){
     const all=await appList(env,u.origin);
     const ids=(Array.isArray(b.apps)?b.apps:[]).filter(id=>all.some(a=>a.id===id)).slice(0,10);
     if(!ids.length)return J({e:'Uygulama seç'},400);
-    const h=Math.min(Math.max(+b.hours||0,0),8760);
+    /* Süre dakika olarak (en çok 365 gün; 0 = süresiz). Eski istemci: hours; eski tek kullanımlık: once */
+    const mins=Math.min(Math.max(Math.round(b.minutes!=null?(+b.minutes||0):(+b.hours||0)*60),0),525600);
+    const mx=Math.min(Math.max(Math.round(b.max!=null?(+b.max||0):(b.once?1:0)),0),1000);
     const code=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(12)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-    const L={apps:ids,exp:h?Date.now()+h*3600000:0,once:!!b.once,note:String(b.note||'').slice(0,120),created:Date.now(),hits:0,last:0};
+    const L={apps:ids,exp:mins?Date.now()+mins*60000:0,max:mx,once:mx===1,note:String(b.note||'').slice(0,120),created:Date.now(),hits:0,last:0};
     await env.LINKS.put('l:'+code,JSON.stringify(L),ttl(L));
     await idxSet(env,[...(await idxGet(env)),code]);
     return J({code,url:u.origin+'/g/'+code});
@@ -237,7 +241,7 @@ async function getLink(env,code){
   if(!/^[\w-]{10,40}$/.test(code))return null;
   const raw=await env.LINKS.get('l:'+code);
   let L=null;try{L=raw&&JSON.parse(raw)}catch(e){}
-  if(!L||(L.exp&&L.exp<Date.now()))return null;
+  if(!L||(L.exp&&L.exp<Date.now())||(lmax(L)&&(+L.hits||0)>=lmax(L)))return null;
   return L;
 }
 /* /api/public: ana sayfanın listesi (giriş gerekmez); yalnız panelde "herkese açık" işaretlenenler */
@@ -257,7 +261,7 @@ async function guest(env,u,p){
   if(r.status>=300&&r.status<400&&r.headers.get('location'))r=await env.ASSETS.fetch(new Request(new URL(r.headers.get('location'),u.origin)));
   return new Response(r.body,{status:r.status,headers:{...HD,'content-type':'text/html;charset=utf-8'}});
 }
-/* /api/g/<kod>: seçilen uygulamaların listesi; tek kullanımlık link burada tüketilir
+/* /api/g/<kod>: seçilen uygulamaların listesi; kullanım hakkı (tek ya da N kullanımlık) burada düşer
    (mesaj önizleme botları JS çalıştırmadığı için linki harcayamaz) */
 async function guestApi(env,u,p,ctx){
   const code=p.slice(7);
@@ -266,9 +270,10 @@ async function guestApi(env,u,p,ctx){
   const all=await appFull(env,u.origin);
   const apps=L.apps.map(id=>all.find(a=>a.id===id)).filter(Boolean);
   if(!apps.length)return J({e:'geçersiz'},410);
-  if(L.once)ctx.waitUntil(env.LINKS.delete('l:'+code));
-  else{L.hits++;L.last=Date.now();ctx.waitUntil(env.LINKS.put('l:'+code,JSON.stringify(L),ttl(L)))}
-  return J({apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:!!L.once});
+  const mx=lmax(L),hits=(+L.hits||0)+1;
+  if(mx&&hits>=mx)ctx.waitUntil(env.LINKS.delete('l:'+code));   /* son hak kullanıldı: link kapanır */
+  else{L.hits=hits;L.last=Date.now();ctx.waitUntil(env.LINKS.put('l:'+code,JSON.stringify(L),ttl(L)))}
+  return J({apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:mx===1,max:mx,left:mx?Math.max(mx-hits,0):0});
 }
 
 async function route(req,env,ctx){
