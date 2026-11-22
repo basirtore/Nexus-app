@@ -231,6 +231,12 @@
   const IC_IMG='<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/>';
   const IC_REFRESH='<path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4"/>';
   const IC_SND='<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>';
+  const IC_COPY='<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>';
+  const IC_SEND='<path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/>';
+  const IC_TRASH='<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>';
+  const IC_SHIELD='<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>';
+  const IC_ARROW='<path d="M5 12h14M13 6l6 6-6 6"/>';
+  const IC_BARS='<path d="M6 20V10M12 20V4M18 20v-7"/>';
   const TITLES={'':'Nexus',uyg:'Uygulamalar',acik:'Herkese açık',davet:'Davet linkleri',durum:'Uygulama durumu',bilgi:'Bilgi'};
   let cur='',drFrom=null;
   let pubSync=function(){};   /* build() içinde tanımlanır: kaydet çubuğunu gösterir/gizler */
@@ -371,21 +377,28 @@
   +'<section class="sec" data-v="acik">'+hd(IC_GLOBE,'Herkese açık')
   +'<p class="sec-note">Açtıkların ana sayfada herkese görünür. Kapalılar gizli kalır, yalnız davet linkiyle verilir. Değişiklikler Kaydet\'e basınca uygulanır.</p>'
   +'<div class="sw-list" id="pbList">'+pubs+'</div></section>'
-  +'<section class="sec" data-v="davet">'+hd(IC_LINK,'Davet linkleri')
-  +'<form id="admF" class="nv" novalidate>'
-  +'<div><div class="nv-h"><span>UYGULAMALAR</span><b id="nvCnt"></b></div>'
+  +'<section class="sec dv" data-v="davet">'
+  +'<div class="dv-hero"><div class="dv-txt"><span class="dv-pill">'+svg(IC_LINK,14)+'Özel davet</span>'
+  +'<h2 class="dv-h">Davet linki <em>oluştur</em></h2>'
+  +'<p class="dv-sub">Uygulamalarını özel bir link ile paylaş; süreyi, kullanım hakkını ve karşılama notunu sen belirle.</p></div>'
+  +'<div class="dv-art" aria-hidden="true"><svg class="dv-orbit" viewBox="0 0 220 120" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="110" cy="60" rx="104" ry="32" transform="rotate(-16 110 60)"/></svg>'
+  +'<img class="dv-logo" src="icons/icon-512.png" alt="" width="104" height="104"></div></div>'
+  +'<form id="admF" class="nv dv-card" novalidate>'
+  +'<div class="dv-ch"><span class="dv-ch-ic">'+svg(IC_LINK,24)+'</span><h3 class="dv-ch-t">Link oluşturma ayarları</h3></div>'
+  +'<div><div class="nv-h"><span>Paylaşılacak uygulamalar</span><b id="nvCnt"></b></div>'
   +(APPS.length?'<div class="ap-grid">'+tiles+'</div>':'<p class="inf-note">Henüz Nexus\'ta görünen uygulama yok. Menüden Uygulamalar ekranına girip istediklerini aç.</p>')
   +'</div>'
-  +'<div><div class="nv-h"><span>AYARLAR</span></div><div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div></div>'
-  +'<div><div class="nv-h"><span>KARŞILAMA NOTU</span><b id="nvNc">0/120</b></div>'
+  +'<div><div class="nv-h"><span>Süre ve kullanım hakkı</span></div><div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div></div>'
+  +'<div><div class="nv-h"><span>Karşılama notu</span><b id="nvNc">0/120</b></div>'
   +'<textarea id="admN" class="inv-in nv-ta" maxlength="120" rows="2" placeholder="Merhaba, denemen için…"></textarea></div>'
   +'<div class="nv-sum" id="nvSum"></div>'
-  +'<button class="btn btn-pri btn-lg" type="submit">Link oluştur</button>'
+  +'<button class="btn btn-pri btn-lg dv-go" type="submit">'+svg(IC_LINK,22)+'<span>Link oluştur</span><i class="dv-go-ar">'+svg(IC_ARROW,18)+'</i></button>'
   +'</form>'
   +'<div id="admR" class="adm-res"></div>'
-  +'<div class="inv-hr"><h3 class="inv-h">Aktif linkler</h3>'
+  +'<div class="inv-hr dv-hr"><span class="dv-hr-ic">'+svg(IC_BARS,22)+'</span><h3 class="inv-h">Aktif linkler</h3>'
   +'<button class="lk-rf" type="button" data-adm="rf" aria-label="Linkleri yenile">'+svg(IC_REFRESH,18)+'<span>Yenile</span></button></div>'
-  +'<div id="admL" class="inv-list"></div></section>'
+  +'<div id="admL" class="inv-list"></div>'
+  +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div></section>'
   +'<section class="sec" data-v="durum">'+hd(IC_PULSE,'Uygulama durumu')
   +'<div id="admS"></div>'
   +'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="st">Durumu yenile</button></div></section>'
@@ -482,12 +495,14 @@
     const bars=(L.exp&&L.created?'<div class="lk-bar" title="Kalan süre"><i style="--w:'+pct((L.exp-now)/(L.exp-L.created)*100)+'%"></i></div>':'')
       +(mx?'<div class="lk-bar" title="Kalan hak"><i style="--w:'+pct((mx-hits)/mx*100)+'%"></i></div>':'');
     const u=esc(location.origin+'/g/'+L.code);
+    const dead=L.exp&&m<=0;
     return '<div class="lk"><div class="lk-top"><div class="lk-ics">'+ics+'</div>'
-      +'<div class="lk-tx"><div class="lk-nm">'+esc(L.apps.map(name).join(', '))+'</div><div class="lk-chips">'+chips+'</div></div></div>'
+      +'<div class="lk-tx"><div class="lk-nm">'+esc(L.apps.map(name).join(', '))+'</div><div class="lk-chips">'+chips+'</div></div>'
+      +'<span class="lk-st'+(dead?' warn':'')+'">'+(dead?'Süresi doldu':'Aktif')+'</span></div>'
       +bars+(L.note?'<div class="lk-note">'+esc(L.note)+'</div>':'')
-      +'<div class="lk-ac"><button class="btn btn-sec" type="button" data-adm="cp" data-u="'+u+'">Kopyala</button>'
-      +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">Paylaş</button>'
-      +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">İptal</button></div></div>';
+      +'<div class="lk-ac"><button class="btn btn-sec" type="button" data-adm="cp" data-u="'+u+'">'+svg(IC_COPY,18)+'Kopyala</button>'
+      +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">'+svg(IC_SEND,18)+'Paylaş</button>'
+      +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">'+svg(IC_TRASH,18)+'İptal</button></div></div>';
   }
   function list(){
     return api('GET','links').then(function(rows){
