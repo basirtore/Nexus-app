@@ -58,18 +58,20 @@ function pHero(mode){
   return logo+'<h1 class="g-h pub-h">Nexus\'a <em>hoş geldin.</em></h1><p class="g-sub pub-sub">'+sub+'</p>';
 }
 function pRender(){
-  const hero=$('#pubHero'),ft=$('#ftTx'),n=APPS.length;
+  const hero=$('#pubHero'),ft=$('#ftTx');
+  const list=PANEL?APPS.filter(function(a){return a.pub}):APPS;   /* panel önizlemesi = ana sayfada herkesin göreceği liste */
+  const n=list.length;
   if(hero){hero.classList.toggle('pub-full',n===0);hero.innerHTML=pHero(n===0?'full':'list')}
-  if(ft)ft.textContent=PANEL?'Ana sayfa önizlemesi':n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
+  if(ft)ft.textContent=n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
   const box=$('#v-apps');
   if(!n){
     box.innerHTML=APPS_FAIL
       ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bağlantı sorunu</b><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p></div><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+(PANEL?'Henüz Nexus\'ta görünen uygulama yok.':'Birkaç gün sonra tekrar uğrayabilirsin.')+'</p></div></div>';
+      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+'Birkaç gün sonra tekrar uğrayabilirsin.'+'</p></div></div>';
     return;
   }
-  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+(PANEL?'Nexus Uygulamaları':'Public Uygulamalar')+'</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
-  const cards=APPS.map(function(a){
+  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+'Public Uygulamalar'+'</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
+  const cards=list.map(function(a){
     const sc=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
     const tag=a.badge&&a.sec!=='arch'?a.badge:sc.title;
     return appCard(Object.assign({},a,{badge:''})).replace('</p></div>','</p><span class="g-tag">'+svg(sc.ic,13)+esc(tag)+'</span></div>');

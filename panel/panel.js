@@ -262,7 +262,7 @@
     +'<div class="dr-sys"><div class="dr-lb">SİSTEM</div>'
     +item('uyg','Uygulamalar',IC_PUSH,'apps')
     +item('bilgi','Bilgi',IC_INFO,'')
-    +'<a class="dr-it" href="/">'+svg(IC_HOME,22)+'<span>Ana sayfayı gör</span></a>'
+    +'<a class="dr-it" href="/">'+svg(IC_HOME,22)+'<span>Ana sayfaya git</span></a>'
     +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,22)+'<span>Çıkış</span></button></div>';
   }
   function counts(){
@@ -465,6 +465,7 @@
       });
       counts();
       pubSync();
+      if(window.renderApps)renderApps();   /* önizleme güncellensin */
       vib([20,40,20]);
       toast('Kaydedildi','ok',savedPub.length+' uygulama herkese açık');
     }).catch(function(){toast('Kaydedilemedi','err','Bağlantını kontrol et')})
