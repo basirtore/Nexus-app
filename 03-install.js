@@ -106,3 +106,52 @@ function setPlat(pl){
   const b=$('#sheetBody [data-pl="'+pl+'"]');
   if(b)b.focus({preventScroll:true});
 }
+
+/* ---------- Nexus'un kendi "Yükle" kartı (yukarıdan sarkar; yeni sayfa açmaz) ---------- */
+let nxBar=null;
+
+function nxCanInstall(){return !isStandalone()&&!window.__nxDone}
+
+/* Üst çubuktaki Yükle düğmesi: uygulama yüklü değilse görünür */
+function nxInstSync(){
+  const b=$('#topInst');
+  if(b)b.classList.toggle('off',!nxCanInstall()||PANEL);
+}
+
+function nxHide(){
+  const b=nxBar;nxBar=null;
+  if(!b||!b.parentNode)return;
+  b.className='nxi nxi-out';
+  setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b)},320);
+}
+
+function nxShow(){
+  if(nxBar||!nxCanInstall())return;
+  const ev=window.__nxIP;
+  const ios=platform()==='ios';
+  const sub=ev?'Ana ekrana ekle, tam ekran çalışır'
+    :ios?'Safari\'de Paylaş ▸ Ana Ekrana Ekle'
+    :'Tarayıcı menüsünden Ana ekrana ekle\'yi seç';
+  const bar=document.createElement('div');
+  bar.className='nxi';bar.setAttribute('role','region');bar.setAttribute('aria-label','Nexus\'u yükle');
+  bar.innerHTML='<img class="nxi-ic" src="icons/icon-192.png" alt="" width="46" height="46">'
+    +'<div class="nxi-tx"><b>Nexus</b><span>'+esc(sub)+'</span></div>'
+    +'<button class="nxi-go" type="button" data-snd="none">'+(ev?'Yükle':'Tamam')+'</button>'
+    +'<button class="nxi-x" type="button" data-snd="none" aria-label="Kapat">'+svg(IC_X,16)+'</button>';
+  bar.querySelector('.nxi-go').onclick=function(){
+    const e=window.__nxIP;
+    nxHide();
+    if(!e){snd('tap');return}
+    window.__nxIP=null;
+    try{e.prompt()}catch(x){}
+    try{e.userChoice.then(function(r){if(r&&r.outcome==='accepted'){snd('ok')}}).catch(function(){})}catch(x){}
+    nxInstSync();
+  };
+  bar.querySelector('.nxi-x').onclick=function(){snd('tap');nxHide()};
+  document.body.appendChild(bar);
+  snd('open');vib(12);
+  nxBar=bar;
+}
+
+window.nxInstSync=nxInstSync;
+window.addEventListener('appinstalled',function(){nxHide();nxInstSync();if(typeof snd==='function')snd('ok')});

@@ -22,6 +22,7 @@
   load();
   migrate();
   updNet();
+  nxInstSync();
 
   /* Panel görünümleri: '' = Uygulamalar; diğerleri yan menüden (hash). Eski #yonet = davet */
   const VIEWS=['uyg','acik','davet','durum','bilgi'];
@@ -60,6 +61,7 @@
     const act=t.dataset.act;
     if(act==='install'){vib(12);openSheet(t.dataset.id)}
     else if(act==='open'||act==='go'){vib(12)}   /* bağlantı kendiliğinden açılır */
+    else if(act==='nxinst'){nxShow()}
     else if(act==='close'){closeSheet()}
     else if(act==='pl'){setPlat(t.dataset.pl)}
     else if(act==='retry'){start()}
