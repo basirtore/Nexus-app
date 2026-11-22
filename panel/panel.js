@@ -315,6 +315,7 @@
     $$('#drawerBody .dr-it[data-v]').forEach(function(b){
       if(b.dataset.v===cur)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
     });
+    ['#pubHero','#ft'].forEach(function(q){const e=$(q);if(e)e.classList.toggle('off',cur!=='')});   /* önizleme başlığı ve alt yazı yalnız ana görünümde */
     counts();
     pubSync();
     wkSync();

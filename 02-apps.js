@@ -55,15 +55,15 @@ function pHero(mode){
 function pRender(){
   const hero=$('#pubHero'),ft=$('#ftTx'),n=APPS.length;
   if(hero){hero.classList.toggle('pub-full',n===0);hero.innerHTML=pHero(n===0?'full':'list')}
-  if(ft)ft.textContent=n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
+  if(ft)ft.textContent=PANEL?'Ana sayfa önizlemesi':n===0?'Özel bir davet ile paylaşıldı.':'Özel olarak seninle paylaşıldı.';
   const box=$('#v-apps');
   if(!n){
     box.innerHTML=APPS_FAIL
       ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bağlantı sorunu</b><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p></div><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>Birkaç gün sonra tekrar uğrayabilirsin.</p></div><span class="pub-info-go">'+svg(IC_GO,20)+'</span></div>';
+      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+(PANEL?'Henüz Nexus\'ta görünen uygulama yok.':'Birkaç gün sonra tekrar uğrayabilirsin.')+'</p></div><span class="pub-info-go">'+svg(IC_GO,20)+'</span></div>';
     return;
   }
-  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">Public Uygulamalar</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
+  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+(PANEL?'Nexus Uygulamaları':'Public Uygulamalar')+'</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
   const cards=APPS.map(function(a){
     const sc=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
     const tag=a.badge&&a.sec!=='arch'?a.badge:sc.title;
@@ -75,7 +75,7 @@ function pRender(){
 function renderApps(){
   const box=$('#v-apps');
   if(!box)return;
-  if(window.NEXUS_PUB&&!PANEL&&!window.NEXUS_GUEST){pRender();return}
+  if(window.NEXUS_PUB&&!window.NEXUS_GUEST){pRender();return}
   const hi=$('#hello');   /* panel önizlemesindeki eski karşılama notu */
   if(hi){
     const n=APPS.length,t=$('#helloTx');

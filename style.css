@@ -965,3 +965,16 @@ body.pub{overflow-x:clip}
 .pub-err .pub-info-ic{color:var(--warn)}
 .pub-err .pub-info-bd b{color:var(--warn)}
 body.pub .g-ft{padding-top:40px}
+
+/* ---------- Tüm sayfalar: dalga arka plan + cam kartlar (panel, durum sayfaları) ---------- */
+body.stp .st-card{z-index:1}
+body.pnl .app-wrap{position:relative;z-index:1}
+body.pnl .sec-hd{gap:10px;min-height:36px;margin:4px 4px 14px;padding:0;color:var(--text)}
+body.pnl .sec-ic{color:var(--accent)}
+body.pnl .sec-ic svg{width:22px;height:22px}
+body.pnl .sec-t{font-size:20px;font-weight:700}
+body.pnl .top-menu{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+body.pnl .wk-card,body.pnl .sw-row:not(.chg),body.pnl .lk,body.pnl .nv,body.pnl .kv,body.pnl .wk-sum,body.pnl .inv-form,body.pnl .inv-it,body.pnl .stx,body.pnl .ap-tile:not(.on){background:var(--surface);background:color-mix(in srgb,var(--surface) 86%,transparent);box-shadow:0 12px 30px -18px var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+body.pnl .wk-card{border-radius:20px}
+body.pnl .sw-row{border-radius:18px}
+body.pnl .lk{border-radius:20px}

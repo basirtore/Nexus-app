@@ -20,7 +20,7 @@ function page(title,o,s){
   const why=(o.why||[]).map(w=>'<li>'+SVS(w[0])+'<span>'+esc(w[1])+'</span></li>').join('');
   return new Response('<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="color-scheme" content="light dark"><title>'+esc(title)+'</title>'
     +'<script>try{var t=localStorage.getItem("nexus.theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>'
-    +'<link rel="stylesheet" href="/style.css"></head><body class="stp"><main class="st-card">'
+    +'<link rel="stylesheet" href="/style.css"></head><body class="stp"><div class="g-deco" aria-hidden="true"><svg class="g-wv g-wv-t" viewBox="0 0 400 240" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M-10 40C60 10 130 120 200 80S340 -20 410 50"/><path d="M-10 70C60 40 130 150 200 110S340 10 410 80"/><path d="M-10 100C60 70 130 180 200 140S340 40 410 110"/></svg><svg class="g-wv g-wv-b" viewBox="0 0 400 240" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M-10 170C70 120 150 230 230 180S350 110 410 150"/><path d="M-10 200C70 150 150 260 230 210S350 140 410 180"/><path d="M-10 230C70 180 150 290 230 240S350 170 410 210"/></svg></div><main class="st-card">'
     +'<div class="st-ic '+esc(o.tone||'')+'">'+SV(o.ic)+'</div>'
     +'<h1 class="st-h">'+esc(o.h)+'</h1><p class="st-p">'+esc(o.p)+'</p>'
     +(why?'<ul class="st-why">'+why+'</ul>':'')
