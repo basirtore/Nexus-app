@@ -679,14 +679,14 @@ button.kv-r:active{background:var(--surface-2)}
 .g-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px;animation:rise .6s .2s var(--ease) both}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--mute);font-size:13px;font-weight:600;line-height:1}
 .chip svg{color:var(--accent)}
-.g-note{position:relative;margin:0 0 20px;padding:20px 20px 18px 22px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface) 75%);font-size:16px;line-height:1.55;animation:rise .6s .26s var(--ease) both}
-.g-note::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:0 4px 4px 0;background:linear-gradient(var(--accent),var(--accent-2))}
+.g-note{position:relative;margin:0 0 24px;padding:24px 22px 22px 28px;border:1.5px solid var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:var(--r-l);background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 80%);box-shadow:0 14px 34px -16px var(--glow-a);font-size:18px;line-height:1.6;font-weight:500;white-space:pre-line;animation:rise .6s .26s var(--ease) both}
+.g-note::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:5px;border-radius:0 4px 4px 0;background:linear-gradient(var(--accent),var(--accent-2))}
 /* Ana sayfa karşılama notu: sade, küçük */
 .hello{position:relative;margin:4px 0 18px;padding:14px 16px 14px 20px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--text);font-size:15px;line-height:1.5}
 .hello::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
 .hello-lb{display:block;margin-bottom:4px;color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.08em}
 .hello b{font-weight:700}
-.g-note-lb{display:block;margin-bottom:6px;color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.08em}
+.g-note-lb{display:flex;align-items:center;gap:7px;margin-bottom:10px;color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.08em;white-space:normal}
 body.g .sec{margin-top:0}
 body.g .sec+.sec{margin-top:24px}
 body.g .sec-list{gap:12px}

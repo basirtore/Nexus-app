@@ -10,14 +10,7 @@
   let ready=false;    /* APPS yüklendi mi */
   let taps=[];        /* gizli yönetici girişi: logoya 3 sn içinde 3 dokunuş */
 
-  /* Alt yazı (#ft yalnız ana sayfada): renkli sürüm etiketi + son push (fx.js) */
-  function showFt(){
-    const el=$('#ft');
-    if(!el)return;
-    el.innerHTML='<span class="ver off" id="ftVer"></span><span class="ft-sub" id="ftPush"></span>';
-    verInto($('#ftVer'),'Nexus ');
-    pushInto($('#ftPush'),false);
-  }
+  /* Sürüm ve son push yalnız panelde (Bilgi) görünür; herkese açık sayfada gösterilmez */
   /* Tamamen sessiz: animasyon, ses, titreşim yok; dokunuşun görünür bir izi kalmaz */
   function hidden(){
     const n=Date.now();
@@ -59,7 +52,6 @@
 
   route();
   start();
-  showFt();
 
   /* Tek dinleyici + data-act ile tüm düğmeler */
   document.addEventListener('click',function(e){
