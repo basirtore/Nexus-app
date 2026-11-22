@@ -35,7 +35,7 @@ function appCard(a){
   +    '<h3 class="app-nm"><a class="app-open" href="'+esc(a.url)+'" target="_blank" rel="noopener" data-act="open">'+esc(a.name)+'</a>'+badge+'</h3>'
   +    '<p class="app-ds">'+esc(a.desc)+'</p>'
   +  '</div>'
-  +  '<div class="app-ac">'+add+(window.NEXUS_GUEST?'<span class="app-cta">Aç</span>':svg(IC_GO,16,'app-go'))+'</div>'
+  +  '<div class="app-ac">'+add+'<span class="app-cta">Aç</span>'+'</div>'
   +'</article>';
 }
 
