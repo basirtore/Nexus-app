@@ -215,7 +215,8 @@ async function api(req,env,u,p){
     const items=[...new Set([...c.names,...cfg.a.map(e=>e.w)])].map(w=>{
       const e=by[w];
       return {w,show:!!(e&&e.show),name:e&&e.name||'',desc:e&&e.desc||'',sec:e&&SECOK.includes(e.sec)?e.sec:'life',badge:e&&e.badge||'',
-        pub:!!(e&&ids.includes(e.id)),isNew:!e&&!seen.includes(w),miss:!err&&!c.names.includes(w),self:w===self};
+        pub:!!(e&&ids.includes(e.id)),isNew:!e&&!seen.includes(w),miss:!err&&!c.names.includes(w),self:w===self,
+        url:c.sub&&c.names.includes(w)?'https://'+w+'.'+c.sub+'.workers.dev/':'',icon:e&&e.icon||'icons/icon-192.png'};
     }).sort((a,b)=>(b.isNew-a.isNew)||(b.show-a.show)||a.w.localeCompare(b.w));
     return J({items,err,at:c.at});
   }
@@ -236,8 +237,27 @@ async function api(req,env,u,p){
     }
     const sn=(Array.isArray(b.seen)?b.seen:[]).filter(w=>typeof w==='string'&&NM.test(w));
     cfg.seen=[...new Set([...(cfg.seen||[]),...sn])].slice(-300);
+    /* Silme: yalnız Cloudflare'de artık olmayan Worker'ların kayıtları silinir (Cloudflare'e ulaşılamazsa silinmez) */
+    const dl=(Array.isArray(b.del)?b.del:[]).filter(w=>typeof w==='string'&&NM.test(w));
+    let deleted=0;
+    if(dl.length){
+      let live=null;try{live=await cfRefresh(env,c)}catch(e){}
+      if(!live)return J({e:'Cloudflare\'e ulaşılamadı, silinemedi'},502);
+      const gone=dl.filter(w=>!live.names.includes(w));
+      if(gone.length){
+        const rm=cfg.a.filter(e=>gone.includes(e.w)).map(e=>e.id);
+        deleted=cfg.a.length;
+        cfg.a=cfg.a.filter(e=>!gone.includes(e.w));
+        deleted-=cfg.a.length;
+        cfg.seen=(cfg.seen||[]).filter(w=>!gone.includes(w));
+        if(rm.length){
+          const ids=await pubIds(env),nx=ids.filter(id=>!rm.includes(id));
+          if(nx.length!==ids.length)await env.LINKS.put('pub',JSON.stringify(nx));
+        }
+      }
+    }
     if(JSON.stringify(cfg)!==before)await env.LINKS.put('apps',JSON.stringify(cfg));
-    return J({ok:1});
+    return J({ok:1,deleted});
   }
   if(p==='/api/public'&&m==='POST'){
     let b={};try{b=await req.json()}catch(e){}

@@ -908,3 +908,8 @@ body.lg-end .lg-bg{opacity:0}
 .lk-rf svg{flex:none;fill:none;stroke:currentColor}
 .lk-rf.spin svg{animation:lgSpin .8s linear infinite}
 @media (hover:hover){.lk-rf:hover{color:var(--text)}}
+
+/* Uygulamalar: Worker simgesi (sitesinden gelirse harf kutusunun yerine) + silme düğmesi */
+.wk-av.has-img{background:var(--surface-2);overflow:hidden}
+.wk-av img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.wk-rm{width:100%;margin-top:8px}

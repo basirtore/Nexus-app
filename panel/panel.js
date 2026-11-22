@@ -45,6 +45,22 @@
   const pick=function(it){return {w:it.w,show:!!it.show,name:it.name||'',desc:it.desc||'',sec:it.sec||'life',badge:it.badge||''}};
   const clone=function(o){return JSON.parse(JSON.stringify(o))};
   function hue(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%360;return h}
+  /* Worker simgeleri: uygulamanın kendi sitesinden denenir (ana ekrandaki gibi, en az 64x64 ise kullanılır); olmazsa harf kutusu kalır */
+  const wkIc={};
+  function wkIcons(){
+    wk.forEach(function(it){
+      if(!it.url||wkIc[it.w]!==undefined)return;
+      wkIc[it.w]=null;
+      const p=new Image(),src=it.url+(it.icon||'icons/icon-192.png');
+      p.onload=function(){
+        if(p.naturalWidth<64||p.naturalHeight<64)return;
+        wkIc[it.w]=p.src;
+        const av=$('.wk-card[data-w="'+it.w+'"] .wk-av',box);
+        if(av){av.classList.add('has-img');av.innerHTML='<img src="'+esc(p.src)+'" alt="" width="46" height="46">'}
+      };
+      p.src=src+(src.indexOf('?')>=0?'&':'?')+'h='+Math.floor(Date.now()/3600000);
+    });
+  }
   /* i verilirse kart sırayla belirir (ilk çizim); verilmezse sessizce yenilenir */
   function wkRow(it,i){
     const w=esc(it.w),nm=it.name||it.w;
@@ -52,7 +68,8 @@
     const chips=(it.isNew?'<i class="badge badge-new">Yeni</i>':'')+(it.self?'<i class="badge">Bu Nexus</i>':'')
       +(it.miss?'<i class="badge badge-priv">Cloudflare\'de yok</i>':'')+(it.badge?'<i class="badge">'+esc(it.badge)+'</i>':'');
     return '<div class="wk-card'+(it.show?'':' dim')+(i!=null?' rise':'')+'" data-w="'+w+'"'+(i!=null?' style="animation-delay:'+Math.min(i,10)*35+'ms"':'')+'>'
-    +'<span class="wk-av" style="--h:'+hue(it.w)+'">'+esc(nm.charAt(0).toUpperCase())+'</span>'
+    +'<span class="wk-av'+(wkIc[it.w]?' has-img':'')+'" style="--h:'+hue(it.w)+'">'
+    +(wkIc[it.w]?'<img src="'+esc(wkIc[it.w])+'" alt="" width="46" height="46">':esc(nm.charAt(0).toUpperCase()))+'</span>'
     +'<div class="wk-bd"><div class="wk-nm">'+esc(nm)+chips+'</div>'
     +'<div class="wk-sub">'+w+' · '+esc(sec)+'</div>'
     +(it.desc?'<div class="wk-ds">'+esc(it.desc)+'</div>':'')+'</div>'
@@ -86,6 +103,7 @@
     wkSnap={};
     wkOrig.forEach(function(x){wkSnap[x.w]=JSON.stringify(pick(x))});
     wkSync();
+    wkIcons();
   }
   function wkRow1(w){
     const it=wk.find(function(x){return x.w===w}),el=$('.wk-card[data-w="'+w+'"]',box);
@@ -133,8 +151,22 @@
       +'<label class="inv-lb">Açıklama<input class="inv-in" id="edD" type="text" maxlength="140" value="'+esc(it.desc)+'"></label>'
       +'<div class="inv-lb">Bölüm<div class="seg seg-w" id="edS" role="group" aria-label="Bölüm">'+segs+'</div></div>'
       +'<label class="inv-lb">Rozet<input class="inv-in" id="edB" type="text" maxlength="16" value="'+esc(it.badge)+'"></label>'
-      +'</div><div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="edOk">Tamam</button></div>',
+      +'</div>'
+      +(it.miss?'<p class="sh-note">Bu Worker Cloudflare\'de bulunamadı (silinmiş olabilir). Nexus\'taki kaydını silebilirsin.</p>'
+        +'<button class="btn btn-sec lk-del wk-rm" type="button" id="edDel">Listeden sil</button>':'')
+      +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="edOk">Tamam</button></div>',
     function(b){
+      const rm=$('#edDel',b);
+      if(rm)rm.addEventListener('click',function(){
+        if(!confirm('"'+(it.name||w)+'" Nexus listesinden silinsin mi?'+(wkChanged().length?' Kaydedilmemiş diğer değişiklikler de gider.':'')))return;
+        rm.disabled=true;
+        api('POST','apps',{items:[],del:[w]}).then(function(j){
+          if(!j.ok){toast(j.e||'Silinemedi','err');rm.disabled=false;return}
+          if(!j.deleted){toast('Silinmedi','err','Worker Cloudflare\'de hâlâ görünüyor');rm.disabled=false;return}
+          try{sessionStorage.setItem('nx.msg','1')}catch(e){}
+          location.reload();
+        }).catch(function(){toast('Silinemedi','err','Bağlantını kontrol et');rm.disabled=false});
+      });
       $('#edS',b).addEventListener('click',function(e){
         const t=e.target.closest('[data-sec]');
         if(!t)return;
