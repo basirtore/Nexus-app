@@ -20,15 +20,13 @@ Sağ üstteki simgeden tema (Otomatik, Açık, Koyu, Gece, Siyah) ve tıklama se
 
 ## Uygulama eklemek
 
-1. `apps.js` listesine satır ekle (gizliyse `panel/private.js`) (`sec` = bölüm id'si: `life`, `trade`, `arch`).
-2. Uygulamanın `icon-192.png` dosyasını `icons/apps/<id>.png` olarak koy.
-3. `sw.js` içindeki `CORE` listesine yeni simgeyi ekle ve `VER` değerini artır.
+Kod gerekmez. Cloudflare'de Worker açılınca panelde **Uygulamalar** ekranında "Yeni" etiketiyle görünür; Nexus'ta görünsün diye işaretlenir, ad/açıklama/bölüm/rozet oradan düzenlenir. Liste Cloudflare API'den ve KV'den gelir, repoda uygulama adresi tutulmaz.
 
 Yeni bir bölüm için `SECS` listesine satır ekle (id, title, ic).
 
-## Sunucu kurulumu (davet linkleri + panel)
+## Sunucu kurulumu (davet linkleri + panel + uygulama listesi)
 1. Cloudflare > Workers & Pages > KV > **Create namespace** (ad: `nexus-links`), id'yi kopyala.
-2. `wrangler.jsonc` içinde `KV-ID-BURAYA` yerine id'yi yaz; `name` değerini Nexus'un mevcut Worker adıyla aynı yap.
-3. Worker > Settings > Variables and Secrets > **Secret**: ad `ADMIN_KEY`, değer uzun bir parola.
+2. `wrangler.jsonc` içinde KV `id` değerini yaz; `name` değerini Nexus'un mevcut Worker adıyla aynı yap.
+3. Worker > Settings > Variables and Secrets > **Secret** olarak üç değer ekle: `ADMIN_KEY` (uzun parola), `CF_ACCOUNT_ID` (hesap kimliği), `CF_API_TOKEN` (yalnız Account > Workers Scripts > Read izinli token). İsteğe bağlı yedek: `CF_SUBDOMAIN`.
 4. Deploy komutu `npx wrangler deploy` olmalı. Sonra `/panel/` adresine gir.
 5. Her uygulamaya `<script src="https://NEXUS-ADRESİ/switcher.js" defer></script>` ekle.
