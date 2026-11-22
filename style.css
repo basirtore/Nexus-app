@@ -844,3 +844,57 @@ body.stp{display:grid;place-items:center;padding:24px}
 .nxi-x{flex:none;width:34px;height:34px;border:0;border-radius:50%;padding:0;display:grid;place-items:center;background:rgba(255,255,255,.09);color:#f2f5f9;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .15s}
 .nxi-x:active{transform:scale(.88);background:rgba(255,255,255,.18)}
 @media (prefers-reduced-motion:reduce){.nxi,.nxi-ic,.nxi-go,.nxi-go::after{animation:none!important}.nxi.nxi-out{opacity:0}}
+
+/* ---------- Giriş sayfası (panel/login.html) ---------- */
+body.lg{overflow-x:hidden}
+.lg-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;transition:opacity .45s ease}
+body.lg-end .lg-bg{opacity:0}
+.lg-c,.lg-r{position:absolute;display:block;border-radius:50%;aspect-ratio:1;animation:lgFloat 14s ease-in-out infinite alternate}
+.lg-c{background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--accent) 34%,transparent),color-mix(in srgb,var(--accent-2) 14%,transparent) 62%,transparent 72%)}
+.lg-r{border:1px solid color-mix(in srgb,var(--accent) 24%,transparent)}
+.lg-c1{width:min(72vw,380px);left:-24%;top:-9%}
+.lg-r1{width:min(116vw,600px);left:-34%;top:-17%;animation-delay:-4s}
+.lg-c2{width:min(66vw,340px);right:-22%;bottom:-8%;animation-delay:-7s}
+.lg-r2{width:min(108vw,560px);right:-34%;bottom:-17%;animation-delay:-2s}
+@keyframes lgFloat{to{transform:translate3d(0,14px,0) scale(1.04)}}
+.lg-card{max-width:400px;padding:36px 24px 20px;border-radius:32px;border-color:color-mix(in srgb,var(--accent) 22%,var(--line));box-shadow:0 30px 70px -28px var(--shadow),0 0 0 1px color-mix(in srgb,var(--accent) 6%,transparent)}
+.lg-card.out{animation:lgOut .45s var(--ease) forwards}
+@keyframes lgOut{to{opacity:0;transform:translateY(-32px) scale(.95)}}
+.lg-ic{position:relative;width:72px;height:72px;margin:0 auto 20px}
+.lg-ic::before{content:"";position:absolute;inset:-30px -30px -46px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 48%,transparent),transparent);animation:glow 4s ease-in-out infinite}
+.lg-ic img{position:relative;width:72px;height:72px;border-radius:20px;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.lg-form{display:grid;gap:6px;margin-top:26px;text-align:left}
+.lg-f{position:relative}
+.lg-fi{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none}
+.lg-in{width:100%;min-height:58px;padding:0 54px 0 52px;border:1px solid var(--line);border-radius:20px;background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 70%,transparent);color:var(--text);font:inherit;font-size:16px;transition:border-color var(--dur) ease,box-shadow var(--dur) ease}
+.lg-in::placeholder{color:var(--mute)}
+.lg-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+.lg-f:focus-within .lg-fi{color:var(--accent)}
+.lg-eye{position:absolute;right:4px;top:50%;display:grid;place-items:center;width:48px;height:48px;transform:translateY(-50%);border:0;border-radius:16px;background:transparent;color:var(--mute);cursor:pointer}
+.lg-eye:active{color:var(--text)}
+.lg-eye .e-on{display:none}
+.lg-eye[aria-pressed="true"] .e-on{display:block}
+.lg-eye[aria-pressed="true"] .e-off{display:none}
+.lg-ck{display:flex;align-items:center;gap:10px;align-self:start;width:max-content;min-height:48px;color:var(--mute);font-size:14px;font-weight:500;cursor:pointer}
+.lg-ck input{appearance:none;-webkit-appearance:none;display:grid;place-items:center;flex:none;width:24px;height:24px;margin:0;border:1.5px solid var(--line);border-radius:8px;background:var(--surface-2);cursor:pointer;transition:background var(--dur) ease,border-color var(--dur) ease}
+.lg-ck input::after{content:"";width:6px;height:12px;margin-top:-2px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0);transition:transform .22s cubic-bezier(.2,1.4,.4,1)}
+.lg-ck input:checked{border-color:transparent;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.lg-ck input:checked::after{transform:rotate(45deg) scale(1)}
+.lg-go{width:100%;min-height:58px;margin-top:4px;border-radius:20px;font-size:17px;font-weight:700;background:linear-gradient(120deg,var(--accent),var(--accent-2));box-shadow:0 16px 30px -16px var(--glow-a)}
+.lg-go:disabled{opacity:.92;cursor:default}
+.lg-spin{display:none;width:20px;height:20px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:lgSpin .7s linear infinite}
+.lg-go.is-load .lg-arrow{display:none}
+.lg-go.is-load .lg-spin{display:block}
+@keyframes lgSpin{to{transform:rotate(360deg)}}
+.lg-form .st-err{margin-top:6px;text-align:center}
+.lg-ft{display:flex;align-items:center;gap:14px;margin-top:10px;color:var(--mute);font-size:13px;font-weight:500}
+.lg-ft::before,.lg-ft::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- Panel > Bilgi: son girişler ---------- */
+.ses-list{display:grid;gap:8px}
+.ses-it{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface)}
+.ses-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.ses-dot.on{background:var(--ok)}
+.ses-bd{min-width:0}
+.ses-d{font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.ses-w{margin-top:2px;color:var(--mute);font-size:13px}

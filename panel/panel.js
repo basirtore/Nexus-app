@@ -255,6 +255,25 @@
     if(drFrom&&drFrom.focus){try{drFrom.focus({preventScroll:true})}catch(e){}}
     drFrom=null;
   }
+  /* Son girişler (Bilgi): KV 'lg' en yeni üstte, en çok 20 kayıt */
+  const AYLAR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  function lgWhen(t){
+    const d=new Date(t),n=new Date(),p=function(x){return (x<10?'0':'')+x};
+    const hm=p(d.getHours())+':'+p(d.getMinutes());
+    if(d.toDateString()===n.toDateString())return 'Bugün · '+hm;
+    if(d.toDateString()===new Date(n.getTime()-864e5).toDateString())return 'Dün · '+hm;
+    return d.getDate()+' '+AYLAR[d.getMonth()]+(d.getFullYear()!==n.getFullYear()?' '+d.getFullYear():'')+' · '+hm;
+  }
+  function lgLoad(){
+    const el=$('#lgList');
+    if(!el)return;
+    api('GET','logins').then(function(j){
+      const a=j.items||[];
+      el.innerHTML=a.length?a.map(function(x,i){
+        return '<div class="ses-it"><span class="ses-dot'+(i?'':' on')+'"></span><div class="ses-bd"><div class="ses-d">'+esc(x.d||'Bilinmeyen cihaz')+'</div><div class="ses-w">'+esc(lgWhen(x.t))+(x.c?' · '+esc(x.c):'')+'</div></div></div>';
+      }).join(''):'<p class="inf-note">Kayıt yok. Bundan sonraki girişler burada görünür.</p>';
+    }).catch(function(){el.innerHTML='<p class="wk-err">Liste alınamadı.</p>'});
+  }
   /* 04-boot.js route() her görünüm değişiminde çağırır: v = '' (Uygulamalar) | acik | davet | durum | bilgi */
   window.panelView=function(v){
     cur=v||'';
@@ -267,7 +286,7 @@
     pubSync();
     wkSync();
     if(cur==='uyg')wkLoad(false);
-    if(cur==='bilgi')pushInto($('#kvPush'),true);
+    if(cur==='bilgi'){pushInto($('#kvPush'),true);lgLoad()}
     closeDr();
   };
   document.addEventListener('click',function(e){
@@ -278,6 +297,7 @@
     else if(a==='mclose'){closeDr()}
     else if(a==='nav'){closeDr();location.hash=t.dataset.v}
     else if(a==='mout'){api('POST','logout',{}).then(function(){location.href='/'})}
+    else if(a==='lgall'){if(confirm('Bu cihaz dahil tüm cihazlardaki oturumlar kapatılsın mı?'))api('POST','logout-all',{}).then(function(){location.href='/'})}
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDr()});
   buildDrawer();
@@ -340,7 +360,9 @@
   +kv(IC_IMG,'SİMGELER','<p id="netState" class="inf-st" role="status"></p>')
   +kv(IC_SUN,'TEMA','<span data-bind="theme"></span>',true)
   +kv(IC_SND,'TIKLAMA SESİ','<span data-bind="snd"></span>',true)
-  +'</div></section>';
+  +'</div>'
+  +'<h3 class="inv-h">Son girişler</h3><div id="lgList" class="ses-list"></div>'
+  +'<div class="adm-row"><button class="btn btn-sec" type="button" data-act="lgall">Tüm cihazlardan çık</button></div></section>';
 
   /* Kaydet / geri al çubuğu (Herkese açık): değişiklik olunca altta çıkar */
   let savedPub=APPS.filter(function(a){return a.pub}).map(function(a){return a.id});

@@ -28,16 +28,18 @@ function page(title,o,s){
     +'<p class="st-foot">NEXUS</p></main></body></html>',
     {status:s||200,headers:{...HD,'content-type':'text/html;charset=utf-8'}});
 }
-async function tok(env){
+/* Oturum numarası (KV 'ep'): "Tüm cihazlardan çık" bunu artırır, eski çerezler geçersiz olur. Yoksa eski biçim ('nexus-admin') geçerli */
+async function epoch(env){return String(await env.LINKS.get('ep')||'')}
+async function tok(env,ep){
   const k=await crypto.subtle.importKey('raw',enc.encode(env.ADMIN_KEY),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  const s=await crypto.subtle.sign('HMAC',k,enc.encode('nexus-admin'));
+  const s=await crypto.subtle.sign('HMAC',k,enc.encode(ep?'nexus-admin:'+ep:'nexus-admin'));
   return [...new Uint8Array(s)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 function eq(a,b){if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0}
 async function isAdmin(req,env){
   if(!env.ADMIN_KEY)return false;
   const m=(req.headers.get('cookie')||'').match(/(?:^|;\s*)nx=([0-9a-f]+)/);
-  return !!m&&eq(m[1],await tok(env));
+  return !!m&&eq(m[1],await tok(env,await epoch(env)));
 }
 /* ---------- Uygulama listesi ----------
    Kaynak: Cloudflare Worker listesi (API) + panelde yapılan ayarlar (KV 'apps').
@@ -133,8 +135,25 @@ async function login(req,env){
     return J({e:n+1>=LIM?'Çok deneme, 10 dk bekle':'Hatalı anahtar ('+(LIM-n-1)+' hak kaldı)'},n+1>=LIM?429:401);
   }
   if(n)await env.LINKS.delete(rk);
+  await logAdd(req,env);
+  /* Beni hatırla: açık (varsayılan) = 30 gün; kapalı = oturum çerezi (tarayıcı kapanınca biter) */
+  const keep=b.remember!==false;
   return new Response('{"ok":1}',{headers:{...HD,'content-type':'application/json',
-    'set-cookie':'nx='+await tok(env)+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=2592000'}});
+    'set-cookie':'nx='+await tok(env,await epoch(env))+'; Path=/; HttpOnly; Secure; SameSite=Strict'+(keep?'; Max-Age=2592000':'')}});
+}
+/* Son girişler: KV 'lg' = [{t,d,c}] en yeni başta, en çok 20 (tarih, cihaz, ülke; IP tutulmaz) */
+function devName(ua){
+  const os=/Android/.test(ua)?'Android':/iPhone|iPad|iPod/.test(ua)?'iOS':/Windows/.test(ua)?'Windows':/Mac OS X|Macintosh/.test(ua)?'macOS':/CrOS/.test(ua)?'ChromeOS':/Linux/.test(ua)?'Linux':'Bilinmeyen cihaz';
+  const br=/Edg\//.test(ua)?'Edge':/OPR\/|Opera/.test(ua)?'Opera':/SamsungBrowser/.test(ua)?'Samsung Internet':/Firefox\/|FxiOS/.test(ua)?'Firefox':/CriOS|Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'';
+  return br?os+' · '+br:os;
+}
+async function logGet(env){try{const a=JSON.parse(await env.LINKS.get('lg')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+async function logAdd(req,env){
+  try{
+    const a=await logGet(env);
+    a.unshift({t:Date.now(),d:devName(req.headers.get('user-agent')||''),c:String(req.cf&&req.cf.country||'')});
+    await env.LINKS.put('lg',JSON.stringify(a.slice(0,20)));
+  }catch(e){}
 }
 
 /* KV list() geç güncellenir (yeni kayıt ~1 dk görünmez); bu yüzden kodlar ayrıca 'idx' kaydında tutulur */
@@ -233,6 +252,11 @@ async function api(req,env,u,p){
       try{const r=await fetch(a.url,{signal:AbortSignal.timeout(5000)});return {id:a.id,name:a.name,ok:r.ok,ms:Date.now()-t}}
       catch(e){return {id:a.id,name:a.name,ok:false,ms:0}}
     })));
+  }
+  if(p==='/api/logins'&&m==='GET')return J({items:await logGet(env)});
+  if(p==='/api/logout-all'&&m==='POST'){
+    await env.LINKS.put('ep',String((+(await epoch(env))||0)+1));
+    return new Response('{"ok":1}',{headers:{...HD,'content-type':'application/json','set-cookie':'nx=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'}});
   }
   return J({e:'yok'},404);
 }
