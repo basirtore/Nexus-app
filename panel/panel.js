@@ -236,6 +236,7 @@
   const IC_TRASH='<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>';
   const IC_SHIELD='<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>';
   const IC_ARROW='<path d="M5 12h14M13 6l6 6-6 6"/>';
+  const IC_UP='<path d="M6 15l6-6 6 6"/>';
   const IC_BARS='<path d="M6 20V10M12 20V4M18 20v-7"/>';
   const TITLES={'':'Nexus',uyg:'Uygulamalar',acik:'Herkese açık',davet:'Davet linkleri',durum:'Uygulama durumu',bilgi:'Bilgi'};
   let cur='',drFrom=null;
@@ -380,7 +381,7 @@
   +'<section class="sec dv" data-v="davet">'
   +'<div class="dv-hero"><div class="dv-txt"><span class="dv-pill">'+svg(IC_LINK,14)+'Özel davet</span>'
   +'<h2 class="dv-h">Davet linki <em>oluştur</em></h2>'
-  +'<p class="dv-sub">Uygulamalarını özel bir link ile paylaş; süreyi, kullanım hakkını ve karşılama notunu sen belirle.</p></div>'
+  +'<p class="dv-sub">Süreyi, kullanım hakkını ve notu sen belirle.</p></div>'
   +'<div class="dv-art" aria-hidden="true"><svg class="dv-orbit" viewBox="0 0 220 120" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="110" cy="60" rx="104" ry="32" transform="rotate(-16 110 60)"/></svg>'
   +'<img class="dv-logo" src="icons/icon-512.png" alt="" width="104" height="104"></div></div>'
   +'<form id="admF" class="nv dv-card" novalidate>'
@@ -388,14 +389,14 @@
   +'<div><div class="nv-h"><span>Paylaşılacak uygulamalar</span><b id="nvCnt"></b></div>'
   +(APPS.length?'<div class="ap-grid">'+tiles+'</div>':'<p class="inf-note">Henüz Nexus\'ta görünen uygulama yok. Menüden Uygulamalar ekranına girip istediklerini aç.</p>')
   +'</div>'
-  +'<div><div class="nv-h"><span>Süre ve kullanım hakkı</span></div><div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div></div>'
-  +'<div><div class="nv-h"><span>Karşılama notu</span><b id="nvNc">0/120</b></div>'
-  +'<textarea id="admN" class="inv-in nv-ta" maxlength="120" rows="2" placeholder="Merhaba, denemen için…"></textarea></div>'
+  +'<div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div>'
+  +'<div class="dv-nt"><textarea id="admN" class="inv-in nv-ta" maxlength="120" rows="1" placeholder="Karşılama notu (isteğe bağlı)" aria-label="Karşılama notu"></textarea><b id="nvNc" class="dv-nc">0/120</b></div>'
   +'<div class="nv-sum" id="nvSum"></div>'
   +'<button class="btn btn-pri btn-lg dv-go" type="submit">'+svg(IC_LINK,22)+'<span>Link oluştur</span><i class="dv-go-ar">'+svg(IC_ARROW,18)+'</i></button>'
   +'</form>'
   +'<div id="admR" class="adm-res"></div>'
   +'<div class="inv-hr dv-hr"><span class="dv-hr-ic">'+svg(IC_BARS,22)+'</span><h3 class="inv-h">Aktif linkler</h3>'
+  +'<button class="lk-all off" type="button" data-adm="more" id="lkAll"></button>'
   +'<button class="lk-rf" type="button" data-adm="rf" aria-label="Linkleri yenile">'+svg(IC_REFRESH,18)+'<span>Yenile</span></button></div>'
   +'<div id="admL" class="inv-list"></div>'
   +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div></section>'
@@ -504,9 +505,20 @@
       +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">'+svg(IC_SEND,18)+'Paylaş</button>'
       +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">'+svg(IC_TRASH,18)+'İptal</button></div></div>';
   }
+  let lkOpen=false;   /* Aktif linkler: yalnız ilki görünür, "Tümünü gör" ile hepsi açılır */
+  function lkAllTx(n){
+    const b=$('#lkAll');
+    if(!b)return;
+    b.classList.toggle('off',n<2);
+    b.innerHTML=(lkOpen?'Daha az':'Tümünü gör ('+n+')')+svg(lkOpen?IC_UP:IC_ARROW,16);
+  }
   function list(){
     return api('GET','links').then(function(rows){
-      $('#admL').innerHTML=rows.length?rows.map(lkCard).join('')+'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="clr">Hepsini iptal et</button></div>':'<p class="inf-note">Aktif link yok.</p>';
+      if(rows.length<2)lkOpen=false;
+      $('#admL').innerHTML=rows.length?lkCard(rows[0])
+        +(rows.length>1?'<div class="lk-more'+(lkOpen?'':' off')+'" id="lkMore">'+rows.slice(1).map(lkCard).join('')+'<div class="adm-row"><button class="btn btn-sec" type="button" data-adm="clr">Hepsini iptal et</button></div></div>':'')
+        :'<p class="inf-note">Aktif link yok.</p>';
+      lkAllTx(rows.length);
       tx('[data-cnt="davet"]',rows.length||'');
       return true;
     }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">Liste alınamadı: '+esc(e&&e.message||e||'hata')+'</p>';return false});
@@ -524,8 +536,8 @@
     tx('#fv-dur',fmtM(inv.mins));
     tx('#fv-use',inv.max?inv.max+' kullanım':'Sınırsız');
     $('#nvSum').innerHTML=(n?'<b>'+n+' uygulama</b>'+(n>1?' (paket)':''):'<b>Uygulama seç</b>')
-      +' · '+(inv.mins?'<b>'+esc(fmtM(inv.mins))+'</b> geçerli':'<b>süresiz</b> geçerli')
-      +' · '+(inv.max?'<b>'+inv.max+' kullanım</b> hakkı':'<b>sınırsız</b> kullanım');
+      +' · '+(inv.mins?'<b>'+esc(fmtM(inv.mins))+'</b>':'<b>süresiz</b>')
+      +' · '+(inv.max?'<b>'+inv.max+' kullanım</b>':'<b>sınırsız</b> kullanım');
   }
   function chipsHtml(list,cur,attr){
     return list.map(function(x,i){return '<button class="pp-chip" type="button" '+attr+'="'+x[0]+'" aria-pressed="'+(x[0]===cur)+'" style="--i:'+i+'">'+x[1]+'</button>'}).join('');
@@ -637,6 +649,7 @@
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
     else if(a==='clr'){if(confirm('Tüm linkler iptal edilsin mi?'))api('POST','links/clear',{}).then(list)}
     else if(a==='st'){status();list()}
+    else if(a==='more'){lkOpen=!lkOpen;const m=$('#lkMore');if(m)m.classList.toggle('off',!lkOpen);lkAllTx($$('.lk',box).length)}
     else if(a==='rf'){
       if(t.classList.contains('spin'))return;
       t.classList.add('spin');t.disabled=true;
@@ -650,7 +663,7 @@
     vib(10);
     if(t.dataset.pop==='dur')popDur();else popUse();
   });
-  $('#admN').addEventListener('input',function(){tx('#nvNc',this.value.length+'/120')});
+  $('#admN').addEventListener('input',function(){tx('#nvNc',this.value.length+'/120');this.style.height='auto';this.style.height=this.scrollHeight+'px'});
   $('#admF').addEventListener('submit',function(e){
     e.preventDefault();
     const ids=$$('input[name=ap]:checked',box).map(function(x){return x.value});
@@ -661,7 +674,7 @@
       if(!r.url){toast(r.e||'Hata','err');return}
       toast('Link hazır','ok','Kopyala ya da paylaş');
       vib([20,40,20]);
-      $('#admN').value='';tx('#nvNc','0/120');
+      $('#admN').value='';$('#admN').style.height='';tx('#nvNc','0/120');
       $('#admR').innerHTML='<div class="nv-res"><div class="nv-res-h">'+svg(IC_CHECK,18)+'Link hazır</div>'
         +'<input class="adm-in" readonly value="'+esc(r.url)+'" onfocus="this.select()">'
         +'<div class="adm-row"><button class="btn btn-pri" type="button" data-adm="cp" data-u="'+esc(r.url)+'">Kopyala</button>'

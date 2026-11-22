@@ -1030,3 +1030,60 @@ body.pnl .lk{border-radius:20px}
 .dv-note p{flex:1;min-width:0;color:var(--mute);font-size:14px;line-height:1.5}
 .dv-note-sh{flex:none;display:inline-flex;color:var(--accent);opacity:.85}
 @media (max-width:360px){.dv-h{font-size:30px}.dv-art{right:-30px}}
+
+/* ---------- Davet linkleri: tek ekrana sığdırma (kompakt) ---------- */
+.dv-hero{min-height:150px;margin-bottom:12px}
+.dv-txt{gap:8px;max-width:62%}
+.dv-h{font-size:30px}
+.dv-sub{font-size:13.5px;line-height:1.45}
+.dv-art{width:170px;height:128px;right:-14px;top:0}
+.dv-logo{width:88px;height:88px;border-radius:24px}
+.dv .nv{gap:12px;padding:14px}
+.dv-ch{padding-bottom:10px}
+.dv-ch-t{font-size:16px}
+.dv .nv-h{margin-bottom:8px;font-size:14px}
+.dv .ap-grid{display:grid;grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:calc((100% - 24px)/4);gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:0 -2px;scrollbar-width:none;overscroll-behavior-x:contain}
+.dv .ap-grid::-webkit-scrollbar{display:none}
+.dv .ap-tile{padding:10px 2px 8px;gap:5px;border-radius:16px}
+.dv .ap-tile img{width:40px;height:40px;border-radius:12px}
+.dv .ap-tile span{font-size:12px}
+.dv .ap-ck{top:5px;right:5px;width:17px;height:17px}
+.dv .ap-ck svg{width:11px;height:11px}
+.dv .fl-row{grid-template-columns:1fr 1fr;gap:8px}
+.dv .fld{min-height:52px;gap:8px;padding:6px 10px 6px 8px}
+.dv .fld-ic{width:32px;height:32px}
+.dv .fld-ic svg{width:16px;height:16px}
+.dv .fld-k{font-size:10px}
+.dv .fld-v{font-size:14px}
+.dv .fld-ch{display:none}
+.dv-nt{position:relative}
+.dv .nv-ta{min-height:46px;max-height:120px;padding:12px 58px 12px 16px;border-radius:999px;line-height:1.35;overflow:hidden}
+.dv .nv-ta:not(:placeholder-shown){border-radius:18px}
+.dv-nc{position:absolute;right:16px;top:14px;color:var(--accent);font-size:12px;font-weight:700;pointer-events:none}
+.dv .nv-sum{padding:0 4px;border-radius:0;background:transparent;font-size:12.5px;line-height:1.4;text-align:center}
+.dv-go{min-height:54px;font-size:16px}
+.dv-hr{margin-top:18px}
+.dv-hr .inv-h{font-size:17px}
+.lk-all{display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.lk-all svg{flex:none;fill:none;stroke:currentColor}
+.dv .lk-rf{width:38px;min-height:38px;padding:0;justify-content:center}
+.dv .lk-rf span{display:none}
+.dv .inv-list{margin-top:10px;gap:10px}
+.dv .lk-more{display:grid;gap:10px}
+.dv .lk{gap:10px;padding:12px 14px;border-radius:20px}
+.dv .lk-ics img{width:42px;height:42px}
+.dv .lk-nm{font-size:15px}
+.dv .lk-chips{margin-top:4px;gap:5px}
+.dv .lk-chip{padding:3px 8px 3px 6px;font-size:11.5px}
+.dv .lk-bar{height:4px}
+.dv .lk-note{padding:6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv .lk-ac .btn{min-height:40px;font-size:13.5px}
+.dv-note{margin-top:12px;padding:12px 14px;border-radius:20px;gap:12px}
+.dv-note p{font-size:13px;line-height:1.4}
+.dv-note-sh svg{width:30px;height:30px}
+.dv-hero{min-height:136px}
+.dv .lk-chips{flex-wrap:nowrap;overflow:hidden}
+.dv .lk-chip{flex:none;white-space:nowrap}
+.dv .lk-chip:nth-child(3){display:none}
+.dv-hr{margin-top:14px}
+.dv .lk-top{align-items:flex-start}
