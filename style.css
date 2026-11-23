@@ -449,6 +449,7 @@ details.sec[open] .sec-chev{transform:rotate(180deg)}
 .sh-note{margin-top:14px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);color:var(--mute);font-size:14px;line-height:1.55}
 .sh-note b{color:var(--text);font-weight:600}
 .sh-ac{margin-top:18px}
+.sh-apk{width:100%;min-height:52px;border-radius:16px;font-size:16px;font-weight:700;margin-top:10px}
 .sh-go{width:100%;min-height:52px;border-radius:16px;font-size:16px;font-weight:700;background:linear-gradient(120deg,var(--accent),var(--accent-2));box-shadow:0 14px 28px -16px var(--glow-a)}
 
 /* Geniş ekran: ortalı 420 px kutu */

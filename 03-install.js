@@ -42,6 +42,12 @@ const STEPS={
 
 function sheetIcon(a){return localIcon(a)}
 
+/* APK'sı olan uygulamalar (id → indirme adresi). Android sekmesinde "APK indir" düğmesi çıkar.
+   Yeni APK'lı uygulama eklemek için buraya satır ekle. */
+const APKS={
+  life:'https://github.com/basirtore/Nexus-app/releases/download/vitaflow-life/vitaflow-life.apk'
+};
+
 function renderSheet(){
   const a=sheetApp;
   if(!a)return;
@@ -54,6 +60,9 @@ function renderSheet(){
   let goUrl=a.url;
   if(oneTap){try{const u=new URL(a.url);u.searchParams.set('install','1');goUrl=u.href}catch(e){}}
   const go='<a class="btn btn-pri sh-go" href="'+esc(goUrl)+'" target="_blank" rel="noopener" data-act="go">'+(oneTap?'Aç ve yükle':'Siteyi aç')+'</a>';
+  const apkUrl=(sheetPl==='android'&&APKS[a.id])||'';
+  const apk=apkUrl?'<a class="btn btn-sec sh-apk" href="'+esc(apkUrl)+'" rel="noopener" download>APK indir (Android)</a>'
+    +'<p class="sh-note">APK, uygulamanın internetsiz açılan sürümüdür. İndirince Android <b>bilinmeyen kaynaklardan yükleme</b> izni isteyebilir, <b>İzin ver</b> de.</p>':'';
   $('#sheetBody').innerHTML=''
     +'<div class="sh-hd">'
     +  '<img class="app-ic sm" src="'+esc(sheetIcon(a))+'" alt="" width="48" height="48">'
@@ -63,7 +72,7 @@ function renderSheet(){
     +'<div class="seg" role="group" aria-label="Cihaz türü">'+tabs+'</div>'
     +'<ol class="steps">'+steps+'</ol>'
     +'<p class="sh-note">'+(oneTap?'<b>Aç ve yükle</b> siteyi açar; üstte çıkan <b>Yükle</b> kartına dokunman yeter. Kart çıkmazsa yukarıdaki adımları izle. ':'')+'Ekledikten sonra uygulama ana ekranından tam ekran açılır.</p>'
-    +'<div class="sh-ac">'+go+'</div>';
+    +'<div class="sh-ac">'+go+apk+'</div>';
 }
 
 /* Alttan açılan sayfayı gösterir (Yükle ve Ayarlar ortak): arka plan inert + kaydırma kilidi */
