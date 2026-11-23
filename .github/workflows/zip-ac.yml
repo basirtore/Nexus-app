@@ -4,15 +4,31 @@ on:
     paths: ['Yukle/*.zip']
 permissions:
   contents: write
+concurrency:
+  group: zip-ac
+  cancel-in-progress: false
 jobs:
   ac:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - run: |
-          for z in Yukle/*.zip; do unzip -o "$z"; git rm -f "$z"; done
+          shopt -s nullglob
+          zips=(Yukle/*.zip)
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "Yukle/ içinde zip yok, atlandı."
+            exit 0
+          fi
+          for z in "${zips[@]}"; do unzip -o "$z"; git rm -f "$z"; done
           git config user.name "zip-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -A
-          git commit -m "Zip ile güncelleme"
-          git push
+          git diff --cached --quiet || git commit -m "Zip ile güncelleme"
+          for i in 1 2 3; do
+            git pull --rebase -q origin "$GITHUB_REF_NAME" && git push && exit 0
+            echo "Push olmadı, tekrar deneniyor ($i/3)"
+            sleep 3
+          done
+          exit 1
