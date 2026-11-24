@@ -318,7 +318,45 @@ async function guestApi(env,u,p,ctx){
   const mx=lmax(L),hits=(+L.hits||0)+1;
   if(mx&&hits>=mx)ctx.waitUntil(env.LINKS.delete('l:'+code));   /* son hak kullanıldı: link kapanır */
   else{L.hits=hits;L.last=Date.now();ctx.waitUntil(env.LINKS.put('l:'+code,JSON.stringify(L),ttl(L)))}
-  return J({apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:mx===1,max:mx,left:mx?Math.max(mx-hits,0):0});
+  const apk={};
+  for(const a of apps)if(APK[a.id])apk[a.id]='/apk/'+a.id+'?t='+await mkTok(env,a.id);
+  return J({apk,apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:mx===1,max:mx,left:mx?Math.max(mx-hits,0):0});
+}
+
+/* ---- APK indirme (yalnız davetliler): APK özel bir repoda durur, Worker kısa ömürlü imzalı biletle kontrol edip akıtır.
+   Gerekenler: Secret GH_APK_TOKEN (APK'nın bulunduğu repoda "Contents: Read" yetkili, salt okunur token).
+   Yeni APK'lı uygulama için APK tablosuna satır ekle ve 03-install.js'in gösterdiği id ile eşleştir. */
+const APK={life:{repo:'basirtore/VitaFlow-Life',tag:'apk-latest',asset:'vitaflow-life.apk'}};
+async function hmac(env,s){
+  const k=await crypto.subtle.importKey('raw',enc.encode('apk|'+env.ADMIN_KEY),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  return [...new Uint8Array(await crypto.subtle.sign('HMAC',k,enc.encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function mkTok(env,id){const exp=Date.now()+2*36e5;return exp.toString(36)+'.'+await hmac(env,id+'.'+exp)}
+async function okTok(env,id,t){
+  const [e,sig]=String(t||'').split('.'),exp=parseInt(e,36);
+  if(!exp||exp<Date.now()||!sig)return false;
+  const w=await hmac(env,id+'.'+exp);
+  if(w.length!==sig.length)return false;
+  let d=0;for(let i=0;i<w.length;i++)d|=w.charCodeAt(i)^sig.charCodeAt(i);
+  return d===0;
+}
+async function apkDl(env,u,p){
+  const id=p.slice(5),A=APK[id];
+  if(!A||!await okTok(env,id,u.searchParams.get('t')))
+    return page('İndirme süresi doldu',{ic:ICO.clock,h:'İndirme süresi doldu',p:'Davet linkini yeniden açıp APK indir düğmesine tekrar dokun.',btn:['/','Nexus\'a git']},403);
+  if(!env.GH_APK_TOKEN)return J({e:'APK ayarı eksik'},503);
+  const H={authorization:'Bearer '+env.GH_APK_TOKEN,'user-agent':'nexus-apk','x-github-api-version':'2022-11-28'};
+  const rel=await fetch('https://api.github.com/repos/'+A.repo+'/releases/tags/'+A.tag,{headers:{...H,accept:'application/vnd.github+json'}});
+  if(!rel.ok)return J({e:'APK bulunamadı'},502);
+  const as=((await rel.json()).assets||[]).find(x=>x.name===A.asset);
+  if(!as)return J({e:'APK bulunamadı'},502);
+  /* GitHub imzalı depolama adresine yönlendirir; Authorization o adrese gitmesin diye yönlendirmeyi elle izle */
+  let r=await fetch(as.url,{headers:{...H,accept:'application/octet-stream'},redirect:'manual'});
+  if(r.status>=300&&r.status<400&&r.headers.get('location'))r=await fetch(r.headers.get('location'));
+  if(!r.ok)return J({e:'APK indirilemedi'},502);
+  const h={...HD,'content-type':'application/vnd.android.package-archive','content-disposition':'attachment; filename="'+A.asset+'"'};
+  const n=r.headers.get('content-length');if(n)h['content-length']=n;
+  return new Response(r.body,{headers:h});
 }
 
 async function route(req,env,ctx){
@@ -331,6 +369,7 @@ async function route(req,env,ctx){
       if(!await isAdmin(req,env))return J({e:'yetkisiz'},401);
       return api(req,env,u,p);
     }
+    if(p.startsWith('/apk/')&&req.method==='GET')return apkDl(env,u,p);
     if(p.startsWith('/g/'))return guest(env,u,p);
     /* Ana sayfa herkese açık (liste /api/public'ten); yönetici girişi gizli: alt yazıya 5 dokunuş → /panel/login */
     if(p==='/index.html'||p==='/index')return Response.redirect(u.origin+'/',302);

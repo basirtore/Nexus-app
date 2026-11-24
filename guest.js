@@ -37,6 +37,7 @@ loadApps=function(){
     return r.json();
   }).then(function(j){
     APPS=(j.apps||[]).filter(function(a){return a&&a.id&&a.url});
+    window.APKURL=j.apk||{};   /* yalnız davetliye verilen, kısa ömürlü APK indirme adresleri */
     const w=document.getElementById('welcome');
     if(w&&j.note){
       w.innerHTML='<span class="g-note-ic">'+svg(G_IC_MAIL,30)+'</span>'
