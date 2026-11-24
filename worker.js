@@ -326,7 +326,7 @@ async function guestApi(env,u,p,ctx){
 /* ---- APK indirme (yalnız davetliler): APK özel bir repoda durur, Worker kısa ömürlü imzalı biletle kontrol edip akıtır.
    Gerekenler: Secret GH_APK_TOKEN (APK'nın bulunduğu repoda "Contents: Read" yetkili, salt okunur token).
    Yeni APK'lı uygulama için APK tablosuna satır ekle ve 03-install.js'in gösterdiği id ile eşleştir. */
-const APK={life:{repo:'basirtore/VitaFlow-Life',tag:'apk-latest',asset:'vitaflow-life.apk'}};
+const APK={life:{repo:'basirtore/VitaFlow-Life',tag:'apk-latest',asset:'vitaflow-life.apk'},health:{repo:'basirtore/VitaFlow-Health',tag:'apk-latest',asset:'vitaflow-health.apk'}};
 async function hmac(env,s){
   const k=await crypto.subtle.importKey('raw',enc.encode('apk|'+env.ADMIN_KEY),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   return [...new Uint8Array(await crypto.subtle.sign('HMAC',k,enc.encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
