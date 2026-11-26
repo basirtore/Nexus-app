@@ -16,9 +16,18 @@ const ICO={
   ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'
 };
 /* o: {ic, tone (''|warn|ok), h, p, why:[[ikon,metin]], btn:[href,metin]} */
-function page(title,o,s){
+/* Dil: istemci 'nxl' çerezini yazar (i18n.js); yalnız durum sayfalarının metni burada çevrilir */
+const EN={'Link geçersiz':'Invalid link',
+  'Bu link artık çalışmıyor. Gönderen kişiden yenisini isteyebilirsin.':'This link no longer works. You can ask the sender for a new one.',
+  'Süresi dolmuş olabilir':'It may have expired','Tek kullanımlıktı ve açıldı':'It was single-use and has been opened','Gönderen iptal etmiş olabilir':'The sender may have revoked it',
+  'Nexus\'a git':'Go to Nexus','İndirme süresi doldu':'Download expired','Davet linkini yeniden açıp APK indir düğmesine tekrar dokun.':'Open your invite link again and tap the APK download button.'};
+const isEn=req=>/(?:^|;\s*)nxl=en(?:;|$)/.test(req.headers.get('cookie')||'');
+function page(title,o,s,en){
+  const tr=t=>en&&EN[t]||t;
+  title=tr(title);
+  o={...o,h:tr(o.h),p:tr(o.p),why:(o.why||[]).map(w=>[w[0],tr(w[1])]),btn:o.btn&&[o.btn[0],tr(o.btn[1])]};
   const why=(o.why||[]).map(w=>'<li>'+SVS(w[0])+'<span>'+esc(w[1])+'</span></li>').join('');
-  return new Response('<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="color-scheme" content="light dark"><title>'+esc(title)+'</title>'
+  return new Response('<!DOCTYPE html><html lang="'+(en?'en':'tr')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="color-scheme" content="light dark"><title>'+esc(title)+'</title>'
     +'<script>try{var t=localStorage.getItem("nexus.theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>'
     +'<link rel="stylesheet" href="/style.css"></head><body class="stp"><div class="g-deco" aria-hidden="true"><svg class="g-wv g-wv-t" viewBox="0 0 400 240" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M-10 40C60 10 130 120 200 80S340 -20 410 50"/><path d="M-10 70C60 40 130 150 200 110S340 10 410 80"/><path d="M-10 100C60 70 130 180 200 140S340 40 410 110"/></svg><svg class="g-wv g-wv-b" viewBox="0 0 400 240" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M-10 170C70 120 150 230 230 180S350 110 410 150"/><path d="M-10 200C70 150 150 260 230 210S350 140 410 180"/><path d="M-10 230C70 180 150 290 230 240S350 170 410 210"/></svg></div><main class="st-card">'
     +'<div class="st-ic '+esc(o.tone||'')+'">'+SV(o.ic)+'</div>'
@@ -295,13 +304,13 @@ async function publicApi(env,u){
   const all=await appFull(env,u.origin);
   return J({apps:all.filter(a=>ids.includes(a.id)).map(a=>({...a,public:true}))});
 }
-const bad=()=>page('Link geçersiz',{ic:ICO.broken,h:'Link geçersiz',p:'Bu link artık çalışmıyor. Gönderen kişiden yenisini isteyebilirsin.',
-  why:[[ICO.clock,'Süresi dolmuş olabilir'],[ICO.star,'Tek kullanımlıktı ve açıldı'],[ICO.ban,'Gönderen iptal etmiş olabilir']],btn:['/','Nexus\'a git']},410);
+const bad=en=>page('Link geçersiz',{ic:ICO.broken,h:'Link geçersiz',p:'Bu link artık çalışmıyor. Gönderen kişiden yenisini isteyebilirsin.',
+  why:[[ICO.clock,'Süresi dolmuş olabilir'],[ICO.star,'Tek kullanımlıktı ve açıldı'],[ICO.ban,'Gönderen iptal etmiş olabilir']],btn:['/','Nexus\'a git']},410,en);
 
 /* /g/<kod>: davet sayfası (Nexus ekranı, yalnız seçilen uygulamalar) */
-async function guest(env,u,p){
+async function guest(env,u,p,en){
   const L=await getLink(env,p.slice(3));
-  if(!L)return bad();
+  if(!L)return bad(en);
   let r=await env.ASSETS.fetch(new Request(u.origin+'/guest'));
   if(r.status>=300&&r.status<400&&r.headers.get('location'))r=await env.ASSETS.fetch(new Request(new URL(r.headers.get('location'),u.origin)));
   return new Response(r.body,{status:r.status,headers:{...HD,'content-type':'text/html;charset=utf-8'}});
@@ -340,10 +349,10 @@ async function okTok(env,id,t){
   let d=0;for(let i=0;i<w.length;i++)d|=w.charCodeAt(i)^sig.charCodeAt(i);
   return d===0;
 }
-async function apkDl(env,u,p){
+async function apkDl(env,u,p,en){
   const id=p.slice(5),A=APK[id];
   if(!A||!await okTok(env,id,u.searchParams.get('t')))
-    return page('İndirme süresi doldu',{ic:ICO.clock,h:'İndirme süresi doldu',p:'Davet linkini yeniden açıp APK indir düğmesine tekrar dokun.',btn:['/','Nexus\'a git']},403);
+    return page('İndirme süresi doldu',{ic:ICO.clock,h:'İndirme süresi doldu',p:'Davet linkini yeniden açıp APK indir düğmesine tekrar dokun.',btn:['/','Nexus\'a git']},403,en);
   if(!env.GH_APK_TOKEN)return J({e:'APK ayarı eksik'},503);
   const H={authorization:'Bearer '+env.GH_APK_TOKEN,'user-agent':'nexus-apk','x-github-api-version':'2022-11-28'};
   const rel=await fetch('https://api.github.com/repos/'+A.repo+'/releases/tags/'+A.tag,{headers:{...H,accept:'application/vnd.github+json'}});
@@ -369,8 +378,8 @@ async function route(req,env,ctx){
       if(!await isAdmin(req,env))return J({e:'yetkisiz'},401);
       return api(req,env,u,p);
     }
-    if(p.startsWith('/apk/')&&req.method==='GET')return apkDl(env,u,p);
-    if(p.startsWith('/g/'))return guest(env,u,p);
+    if(p.startsWith('/apk/')&&req.method==='GET')return apkDl(env,u,p,isEn(req));
+    if(p.startsWith('/g/'))return guest(env,u,p,isEn(req));
     /* Ana sayfa herkese açık (liste /api/public'ten); yönetici girişi gizli: alt yazıya 5 dokunuş → /panel/login */
     if(p==='/index.html'||p==='/index')return Response.redirect(u.origin+'/',302);
     if(p==='/')return env.ASSETS.fetch(req);

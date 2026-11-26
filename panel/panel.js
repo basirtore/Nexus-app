@@ -5,21 +5,21 @@
   if(!box)return;
   function api(m,p,b){
     return fetch('/api/'+p,{method:m,headers:b?{'content-type':'application/json'}:{},body:b?JSON.stringify(b):undefined,cache:'no-store'})
-    .then(function(r){if(r.status===401){location.href='/panel/login';throw 0}return r.json().catch(function(){throw new Error('sunucu '+r.status)})});
+    .then(function(r){if(r.status===401){location.href='/panel/login';throw 0}return r.json().catch(function(){throw new Error(T('sunucu {n}',{n:r.status}))})});
   }
   /* Süre biçimleri: fmtM tam ("1 gün 3 sa"), fmtS kısa kalan süre (en çok iki birim) */
   function fmtM(m){
-    if(!m)return 'Süresiz';
+    if(!m)return T('Süresiz');
     const d=Math.floor(m/1440),h=Math.floor(m%1440/60),n=m%60,p=[];
-    if(d)p.push(d+' gün');
-    if(h)p.push(h+' sa');
-    if(n)p.push(n+' dk');
+    if(d)p.push(T('{n} gün',{n:d}));
+    if(h)p.push(T('{n} sa',{n:h}));
+    if(n)p.push(T('{n} dk',{n:n}));
     return p.join(' ');
   }
   function fmtS(m){
-    if(m>=1440){const d=Math.floor(m/1440),h=Math.floor(m%1440/60);return d+' gün'+(h?' '+h+' sa':'')}
-    if(m>=60){const h=Math.floor(m/60),n=m%60;return h+' sa'+(n?' '+n+' dk':'')}
-    return Math.max(m,1)+' dk';
+    if(m>=1440){const d=Math.floor(m/1440),h=Math.floor(m%1440/60);return T('{n} gün',{n:d})+(h?' '+T('{n} sa',{n:h}):'')}
+    if(m>=60){const h=Math.floor(m/60),n=m%60;return T('{n} sa',{n:h})+(n?' '+T('{n} dk',{n:n}):'')}
+    return T('{n} dk',{n:Math.max(m,1)});
   }
   /* Evet / Hayır onay penceresi (tarayıcının kendi confirm() kutusu yerine).
      ask({t:başlık, d:açıklama, bad:1=kırmızı Evet}) → Promise<boolean>; Hayır, dışa dokunma ve Escape = false */
@@ -37,8 +37,8 @@
     el.setAttribute('aria-hidden','true');
     el.innerHTML='<div class="cf-bg" data-cf="0"></div><div class="cf-p"><span class="cf-ic">'+svg(IC_HELP,26)+'</span>'
       +'<h3 id="cfT" class="cf-t"></h3><p id="cfD" class="cf-d"></p>'
-      +'<div class="cf-ac"><button class="btn btn-sec cf-b" type="button" data-cf="0">Hayır</button>'
-      +'<button class="btn btn-pri cf-b cf-yes" type="button" data-cf="1">Evet</button></div></div>';
+      +'<div class="cf-ac"><button class="btn btn-sec cf-b" type="button" data-cf="0">'+T('Hayır')+'</button>'
+      +'<button class="btn btn-pri cf-b cf-yes" type="button" data-cf="1">'+T('Evet')+'</button></div></div>';
     document.body.appendChild(el);
     el.addEventListener('click',function(e){
       const t=e.target.closest('[data-cf]');
@@ -59,7 +59,7 @@
     return new Promise(function(res){
       const el=cfEl();
       if(cfRes)cfClose(false);
-      $('#cfT').textContent=o.t||'Emin misin?';
+      $('#cfT').textContent=o.t||T('Emin misin?');
       $('#cfD').textContent=o.d||'';
       el.classList.toggle('bad',!!o.bad);
       /* arkadaki ekranlar (ana sayfa, açık pencere) etkisiz; kapanınca eski durum geri gelir */
@@ -103,7 +103,7 @@
   }
   function ppHead(t,sub){
     return '<div class="sh-hd"><div class="sh-tt"><h2 id="shTitle" class="sh-title">'+t+'</h2><p class="sh-sub">'+sub+'</p></div>'
-      +'<button class="ib" type="button" data-act="close" aria-label="Kapat">'+svg(IC_CLOSE,22)+'</button></div>';
+      +'<button class="ib" type="button" data-act="close" aria-label="'+T('Kapat')+'">'+svg(IC_CLOSE,22)+'</button></div>';
   }
   function name(id){const a=APPS.find(function(x){return x.id===id});return a?a.name:id}
   function hd(ic,t){
@@ -111,7 +111,7 @@
   }
   /* ---------- Uygulamalar: Cloudflare Worker listesi + düzenleme ---------- */
   let wk=[],wkOrig=[],wkSnap={},wkLoaded=false,wkBar=null,wkSaving=false;
-  const SECN=[['life','Yaşam ve Sağlık'],['trade','Trader Araçları'],['arch','Arşiv']];
+  const SECN=[['life',T('Yaşam ve Sağlık')],['trade',T('Trader Araçları')],['arch',T('Arşiv')]];
   const IC_EDIT='<path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>';
   function barFlag(){document.documentElement.classList.toggle('has-bar',$$('.savebar.show').length>0)}
   const pick=function(it){return {w:it.w,show:!!it.show,name:it.name||'',desc:it.desc||'',sec:it.sec||'life',badge:it.badge||''}};
@@ -137,16 +137,16 @@
   function wkRow(it,i){
     const w=esc(it.w),nm=it.name||it.w;
     const sec=(SECN.filter(function(s){return s[0]===it.sec})[0]||SECN[0])[1];
-    const chips=(it.isNew?'<i class="badge badge-new">Yeni</i>':'')+(it.self?'<i class="badge">Bu Nexus</i>':'')
-      +(it.miss?'<i class="badge badge-priv">Cloudflare\'de yok</i>':'')+(it.badge?'<i class="badge">'+esc(it.badge)+'</i>':'');
+    const chips=(it.isNew?'<i class="badge badge-new">'+T('Yeni')+'</i>':'')+(it.self?'<i class="badge">'+T('Bu Nexus')+'</i>':'')
+      +(it.miss?'<i class="badge badge-priv">'+T('Cloudflare\'de yok')+'</i>':'')+(it.badge?'<i class="badge">'+esc(T(it.badge))+'</i>':'');
     return '<div class="wk-card'+(it.show?'':' dim')+(i!=null?' rise':'')+'" data-w="'+w+'"'+(i!=null?' style="animation-delay:'+Math.min(i,10)*35+'ms"':'')+'>'
     +'<span class="wk-av'+(wkIc[it.w]?' has-img':'')+'" style="--h:'+hue(it.w)+'">'
     +(wkIc[it.w]?'<img src="'+esc(wkIc[it.w])+'" alt="" width="46" height="46">':esc(nm.charAt(0).toUpperCase()))+'</span>'
     +'<div class="wk-bd"><div class="wk-nm">'+esc(nm)+chips+'</div>'
     +'<div class="wk-sub">'+w+' · '+esc(sec)+'</div>'
-    +(it.desc?'<div class="wk-ds">'+esc(it.desc)+'</div>':'')+'</div>'
-    +'<button class="ib wk-ed" type="button" data-wk-edit="'+w+'" aria-label="'+w+' düzenle">'+svg(IC_EDIT,20)+'</button>'
-    +'<input class="sw" type="checkbox" data-f="show"'+(it.show?' checked':'')+' aria-label="'+w+' Nexus\'ta görünsün">'
+    +(it.desc?'<div class="wk-ds">'+esc(T(it.desc))+'</div>':'')+'</div>'
+    +'<button class="ib wk-ed" type="button" data-wk-edit="'+w+'" aria-label="'+T('{w} düzenle',{w:w})+'">'+svg(IC_EDIT,20)+'</button>'
+    +'<input class="sw" type="checkbox" data-f="show"'+(it.show?' checked':'')+' aria-label="'+T('{w} Nexus\'ta görünsün',{w:w})+'">'
     +'</div>';
   }
   function wkCollect(){return wk.map(pick)}
@@ -155,7 +155,7 @@
     const e=$('#wkSum');
     if(!e)return;
     const v=wk.filter(function(x){return x.show}).length;
-    e.innerHTML='<div class="wk-big">'+v+' <span>/ '+wk.length+'</span></div><div class="wk-small">Worker Nexus\'ta görünüyor</div>';
+    e.innerHTML='<div class="wk-big">'+v+' <span>/ '+wk.length+'</span></div><div class="wk-small">'+T('Worker Nexus\'ta görünüyor')+'</div>';
   }
   function wkSync(){
     if(!wkBar)return;
@@ -165,13 +165,13 @@
     wkBar.classList.toggle('show',show);
     wkBar.inert=!show;
     barFlag();
-    if(ch.length)$('#wkTx').innerHTML=ch.length+' değişiklik<small>Henüz kaydedilmedi</small>';
+    if(ch.length)$('#wkTx').innerHTML=T('{n} değişiklik',{n:ch.length})+'<small>'+T('Henüz kaydedilmedi')+'</small>';
     wkSum();
   }
   function wkRender(){
     const el=$('#wkList');
     if(!el)return;
-    el.innerHTML=wk.length?wk.map(wkRow).join(''):'<p class="inf-note">Worker bulunamadı.</p>';
+    el.innerHTML=wk.length?wk.map(wkRow).join(''):'<p class="inf-note">'+T('Worker bulunamadı.')+'</p>';
     wkSnap={};
     wkOrig.forEach(function(x){wkSnap[x.w]=JSON.stringify(pick(x))});
     wkSync();
@@ -185,17 +185,17 @@
     const el=$('#wkList');
     if(!el||(wkLoaded&&!force))return;
     wkLoaded=true;
-    el.innerHTML='<p class="inf-note">Yükleniyor…</p>';
+    el.innerHTML='<p class="inf-note">'+T('Yükleniyor…')+'</p>';
     api('GET','workers').then(function(j){
       wk=j.items||[];
       wkOrig=clone(wk);
       const n=wk.filter(function(x){return x.isNew}).length;
-      $('#wkMsg').innerHTML=(j.err?'<p class="wk-err">Cloudflare\'e ulaşılamadı: '+esc(j.err)+'<br>Son bilinen liste gösteriliyor.</p>':'')
-        +(n?'<p class="sec-note">'+n+' yeni Worker var.</p>':'');
+      $('#wkMsg').innerHTML=(j.err?'<p class="wk-err">'+T('Cloudflare\'e ulaşılamadı: {e}',{e:esc(Ts(j.err))})+'<br>'+T('Son bilinen liste gösteriliyor.')+'</p>':'')
+        +(n?'<p class="sec-note">'+T('{n} yeni Worker var.',{n:n})+'</p>':'');
       wkRender();
     }).catch(function(e){
       wkLoaded=false;
-      el.innerHTML='<p class="wk-err">Liste alınamadı'+(e&&e.message?': '+esc(e.message):'')+'. Bağlantını kontrol et.</p>';
+      el.innerHTML='<p class="wk-err">'+T('Liste alınamadı')+(e&&e.message?': '+esc(e.message):'')+'. '+T('Bağlantını kontrol et.')+'</p>';
     });
   }
   function wkSave(){
@@ -203,13 +203,13 @@
     const btn=$('[data-wk=save]',wkBar);
     wkSaving=true;
     btn.disabled=true;
-    btn.textContent='Kaydediliyor…';
+    btn.textContent=T('Kaydediliyor…');
     api('POST','apps',{items:wkCollect(),seen:wk.map(function(x){return x.w})}).then(function(j){
-      if(!j.ok){toast(j.e||'Kaydedilemedi','err');return}
+      if(!j.ok){toast(Ts(j.e||'Kaydedilemedi'),'err');return}
       try{sessionStorage.setItem('nx.msg','1')}catch(e){}
       location.reload();   /* APPS ve diğer görünümler yeni listeyle yeniden kurulur */
-    }).catch(function(){toast('Kaydedilemedi','err','Bağlantını kontrol et')})
-      .then(function(){wkSaving=false;btn.disabled=false;btn.textContent='Kaydet'});
+    }).catch(function(){toast(T('Kaydedilemedi'),'err',T('Bağlantını kontrol et'))})
+      .then(function(){wkSaving=false;btn.disabled=false;btn.textContent=T('Kaydet')});
   }
   /* Düzenleme penceresi: ad, açıklama, bölüm (seçim kutusu yok, üç düğme), rozet */
   function wkEdit(w){
@@ -219,26 +219,26 @@
     const segs=SECN.map(function(s){return '<button class="seg-b" type="button" data-sec="'+s[0]+'" aria-pressed="'+(sec===s[0])+'">'+esc(s[1])+'</button>'}).join('');
     popSheet(ppHead(esc(it.name||it.w),esc(it.w))
       +'<div class="pp-form">'
-      +'<label class="inv-lb">Ad<input class="inv-in" id="edN" type="text" maxlength="40" placeholder="'+esc(it.w)+'" value="'+esc(it.name)+'"></label>'
-      +'<label class="inv-lb">Açıklama<input class="inv-in" id="edD" type="text" maxlength="140" value="'+esc(it.desc)+'"></label>'
-      +'<div class="inv-lb">Bölüm<div class="seg seg-w" id="edS" role="group" aria-label="Bölüm">'+segs+'</div></div>'
-      +'<label class="inv-lb">Rozet<input class="inv-in" id="edB" type="text" maxlength="16" value="'+esc(it.badge)+'"></label>'
+      +'<label class="inv-lb">'+T('Ad')+'<input class="inv-in" id="edN" type="text" maxlength="40" placeholder="'+esc(it.w)+'" value="'+esc(it.name)+'"></label>'
+      +'<label class="inv-lb">'+T('Açıklama')+'<input class="inv-in" id="edD" type="text" maxlength="140" value="'+esc(it.desc)+'"></label>'
+      +'<div class="inv-lb">'+T('Bölüm')+'<div class="seg seg-w" id="edS" role="group" aria-label="'+T('Bölüm')+'">'+segs+'</div></div>'
+      +'<label class="inv-lb">'+T('Rozet')+'<input class="inv-in" id="edB" type="text" maxlength="16" value="'+esc(it.badge)+'"></label>'
       +'</div>'
-      +(it.miss?'<p class="sh-note">Bu Worker Cloudflare\'de bulunamadı (silinmiş olabilir). Nexus\'taki kaydını silebilirsin.</p>'
-        +'<button class="btn btn-sec lk-del wk-rm" type="button" id="edDel">Listeden sil</button>':'')
-      +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="edOk">Tamam</button></div>',
+      +(it.miss?'<p class="sh-note">'+T('Bu Worker Cloudflare\'de bulunamadı (silinmiş olabilir). Nexus\'taki kaydını silebilirsin.')+'</p>'
+        +'<button class="btn btn-sec lk-del wk-rm" type="button" id="edDel">'+T('Listeden sil')+'</button>':'')
+      +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="edOk">'+T('Tamam')+'</button></div>',
     function(b){
       const rm=$('#edDel',b);
       if(rm)rm.addEventListener('click',function(){
-        ask({t:'Listeden silinsin mi?',d:'"'+(it.name||w)+'" Nexus listesinden silinir.'+(wkChanged().length?' Kaydedilmemiş diğer değişiklikler de gider.':''),bad:1}).then(function(y){
+        ask({t:T('Listeden silinsin mi?'),d:T('"{name}" Nexus listesinden silinir.',{name:it.name||w})+(wkChanged().length?' '+T('Kaydedilmemiş diğer değişiklikler de gider.'):''),bad:1}).then(function(y){
           if(!y)return;
           rm.disabled=true;
           api('POST','apps',{items:[],del:[w]}).then(function(j){
-            if(!j.ok){toast(j.e||'Silinemedi','err');rm.disabled=false;return}
-            if(!j.deleted){toast('Silinmedi','err','Worker Cloudflare\'de hâlâ görünüyor');rm.disabled=false;return}
+            if(!j.ok){toast(Ts(j.e||'Silinemedi'),'err');rm.disabled=false;return}
+            if(!j.deleted){toast(T('Silinmedi'),'err',T('Worker Cloudflare\'de hâlâ görünüyor'));rm.disabled=false;return}
             try{sessionStorage.setItem('nx.msg','1')}catch(e){}
             location.reload();
-          }).catch(function(){toast('Silinemedi','err','Bağlantını kontrol et');rm.disabled=false});
+          }).catch(function(){toast(T('Silinemedi'),'err',T('Bağlantını kontrol et'));rm.disabled=false});
         });
       });
       $('#edS',b).addEventListener('click',function(e){
@@ -262,17 +262,17 @@
     wkBar.id='saveBar2';
     wkBar.className='savebar';
     wkBar.setAttribute('role','region');
-    wkBar.setAttribute('aria-label','Kaydedilmemiş değişiklikler');
+    wkBar.setAttribute('aria-label',T('Kaydedilmemiş değişiklikler'));
     wkBar.inert=true;
     wkBar.innerHTML='<div class="savebar-tx" id="wkTx"></div>'
-      +'<button class="btn btn-sec" type="button" data-wk="undo">Geri al</button>'
-      +'<button class="btn btn-pri" type="button" data-wk="save">Kaydet</button>';
+      +'<button class="btn btn-sec" type="button" data-wk="undo">'+T('Geri al')+'</button>'
+      +'<button class="btn btn-pri" type="button" data-wk="save">'+T('Kaydet')+'</button>';
     document.body.appendChild(wkBar);
     wkBar.addEventListener('click',function(e){
       const t=e.target.closest('[data-wk]');
       if(!t)return;
       if(t.dataset.wk==='save')wkSave();
-      else{wk=clone(wkOrig);wkRender();toast('Değişiklikler geri alındı');vib(12)}
+      else{wk=clone(wkOrig);wkRender();toast(T('Değişiklikler geri alındı'));vib(12)}
     });
     box.addEventListener('change',function(e){
       const t=e.target,card=t&&t.closest?t.closest('.wk-card'):null;
@@ -285,7 +285,7 @@
       const t=e.target.closest('[data-wk-edit]');
       if(t){vib(10);wkEdit(t.dataset.wkEdit)}
     });
-    try{if(sessionStorage.getItem('nx.msg')){sessionStorage.removeItem('nx.msg');setTimeout(function(){toast('Kaydedildi','ok','Liste güncellendi')},400)}}catch(e){}
+    try{if(sessionStorage.getItem('nx.msg')){sessionStorage.removeItem('nx.msg');setTimeout(function(){toast(T('Kaydedildi'),'ok',T('Liste güncellendi'))},400)}}catch(e){}
   }
 
   /* ---------- Yan menü (hamburger): kategoriler + sayaçlar ---------- */
@@ -331,7 +331,7 @@
   const ART_GLOBE='<svg class="pg-globe" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="24" cy="24" r="20"/><ellipse cx="24" cy="24" rx="8.5" ry="20"/><path d="M5 17h38M5 31h38"/></svg>';
   function note(tx){return '<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>'+tx+'</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'}
   function sh(ic,t,right){return '<div class="pg-sh"><span class="pg-sh-ic">'+svg(ic,22)+'</span><h3 class="pg-sh-t">'+t+'</h3>'+(right||'')+'</div>'}
-  const TITLES={'':'Nexus',uyg:'Uygulamalar',acik:'Herkese açık',davet:'Davet linkleri',durum:'Uygulama durumu',bilgi:'Bilgi'};
+  const TITLES={'':'Nexus',uyg:T('Uygulamalar'),acik:T('Herkese açık'),davet:T('Davet linkleri'),durum:T('Uygulama durumu'),bilgi:T('Bilgi')};
   let cur='',drFrom=null;
   let pubSync=function(){};   /* build() içinde tanımlanır: kaydet çubuğunu gösterir/gizler */
   function tx(sel,t){const e=$(sel);if(e)e.textContent=t}
@@ -346,19 +346,19 @@
     +'<svg class="dr-arc" viewBox="0 0 340 200" preserveAspectRatio="xMaxYMin slice" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M110 200C170 90 270 50 345 62"/><path d="M130 200C190 108 280 70 345 80" opacity=".6"/></svg>'
     +'<div class="dr-hd"><img class="dr-logo" src="icons/icon-192.png" alt="" width="56" height="56">'
     +'<div class="dr-tt"><div class="dr-nm">Nexus</div><div class="dr-sub">PANEL</div></div>'
-    +'<button class="ib dr-x" type="button" data-act="mclose" aria-label="Kapat">'+svg(IC_CLOSE,22)+'</button></div>'
+    +'<button class="ib dr-x" type="button" data-act="mclose" aria-label="'+T('Kapat')+'">'+svg(IC_CLOSE,22)+'</button></div>'
     +'<button id="drSum" class="dr-sum" type="button" data-act="nav" data-v="acik"></button>'
     +dlb(IC_APPS,'NEXUS')
-    +item('','Önizleme',IC_APPS,'')
-    +dlb(IC_GEAR,'YÖNETİM')
-    +item('acik','Herkese açık',IC_GLOBE,'pub')
-    +item('davet','Davet linkleri',IC_LINK,'davet')
-    +item('durum','Uygulama durumu',IC_PULSE,'')
-    +'<div class="dr-sys">'+dlb(IC_LAYERS,'SİSTEM')
-    +item('uyg','Uygulamalar',IC_SLIDERS,'apps')
-    +item('bilgi','Bilgi',IC_INFO,'')
-    +'<a class="dr-it" href="/">'+svg(IC_HOME,24)+'<span class="dr-t">Ana sayfaya git</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></a>'
-    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,24)+'<span class="dr-t">Çıkış</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></button></div>';
+    +item('',T('Önizleme'),IC_APPS,'')
+    +dlb(IC_GEAR,T('YÖNETİM'))
+    +item('acik',T('Herkese açık'),IC_GLOBE,'pub')
+    +item('davet',T('Davet linkleri'),IC_LINK,'davet')
+    +item('durum',T('Uygulama durumu'),IC_PULSE,'')
+    +'<div class="dr-sys">'+dlb(IC_LAYERS,T('SİSTEM'))
+    +item('uyg',T('Uygulamalar'),IC_SLIDERS,'apps')
+    +item('bilgi',T('Bilgi'),IC_INFO,'')
+    +'<a class="dr-it" href="/">'+svg(IC_HOME,24)+'<span class="dr-t">'+T('Ana sayfaya git')+'</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></a>'
+    +'<button class="dr-it" type="button" data-act="mout">'+svg(IC_OUT,24)+'<span class="dr-t">'+T('Çıkış')+'</span><i class="dr-ch">'+svg(IC_GO,18)+'</i></button></div>';
     counts();
   }
   function counts(){
@@ -366,9 +366,9 @@
     /* Menü üstündeki durum kartı: ana sayfanın şu anki hali; dokununca ilgili ekrana gider */
     const sm=$('#drSum');
     if(sm){
-      const t=!n?['off','Uygulama yok','Önce Uygulamalar ekranından aç','uyg']
-        :!p?['warn','Ana sayfa boş','Herkese açık uygulama yok','acik']
-        :['ok',p+' uygulama yayında',n-p?(n-p)+' gizli · ana sayfada herkese görünür':'Hepsi ana sayfada görünür','acik'];
+      const t=!n?['off',T('Uygulama yok'),T('Önce Uygulamalar ekranından aç'),'uyg']
+        :!p?['warn',T('Ana sayfa boş'),T('Herkese açık uygulama yok'),'acik']
+        :['ok',T('{n} uygulama yayında',{n:p}),n-p?T('{n} gizli · ana sayfada herkese görünür',{n:n-p}):T('Hepsi ana sayfada görünür'),'acik'];
       sm.className='dr-sum '+t[0];
       sm.dataset.v=t[3];
       sm.innerHTML='<span class="dr-dot"></span><span class="dr-st"><b>'+esc(t[1])+'</b><small>'+esc(t[2])+'</small></span><span class="dr-go">'+svg(IC_GO,18)+'</span>';
@@ -400,13 +400,12 @@
     drFrom=null;
   }
   /* Son girişler (Bilgi): KV 'lg' en yeni üstte, en çok 20 kayıt */
-  const AYLAR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   function lgWhen(t){
     const d=new Date(t),n=new Date(),p=function(x){return (x<10?'0':'')+x};
     const hm=p(d.getHours())+':'+p(d.getMinutes());
-    if(d.toDateString()===n.toDateString())return 'Bugün · '+hm;
-    if(d.toDateString()===new Date(n.getTime()-864e5).toDateString())return 'Dün · '+hm;
-    return d.getDate()+' '+AYLAR[d.getMonth()]+(d.getFullYear()!==n.getFullYear()?' '+d.getFullYear():'')+' · '+hm;
+    if(d.toDateString()===n.toDateString())return T('Bugün')+' · '+hm;
+    if(d.toDateString()===new Date(n.getTime()-864e5).toDateString())return T('Dün')+' · '+hm;
+    return d.getDate()+' '+monName(d.getMonth())+(d.getFullYear()!==n.getFullYear()?' '+d.getFullYear():'')+' · '+hm;
   }
   let lgItems=[],lgAll=false;
   function lgIc(d){return /android|iphone|ipad|ios|mobile/i.test(d||'')?IC_PHONE:IC_DESK}
@@ -415,15 +414,15 @@
     if(!el)return;
     const a=lgItems,shown=lgAll?a:a.slice(0,3);
     el.innerHTML=a.length?shown.map(function(x,i){
-      return '<div class="ses-it"><span class="ses-dot'+(i?'':' on')+'"></span><span class="ses-ic">'+svg(lgIc(x.d),20)+'</span><div class="ses-bd"><div class="ses-d">'+esc(x.d||'Bilinmeyen cihaz')+'</div><div class="ses-w">'+esc(lgWhen(x.t))+(x.c?' · '+esc(x.c):'')+'</div></div></div>';
-    }).join(''):'<p class="inf-note">Kayıt yok. Bundan sonraki girişler burada görünür.</p>';
+      return '<div class="ses-it"><span class="ses-dot'+(i?'':' on')+'"></span><span class="ses-ic">'+svg(lgIc(x.d),20)+'</span><div class="ses-bd"><div class="ses-d">'+esc(T(x.d||'Bilinmeyen cihaz'))+'</div><div class="ses-w">'+esc(lgWhen(x.t))+(x.c?' · '+esc(x.c):'')+'</div></div></div>';
+    }).join(''):'<p class="inf-note">'+T('Kayıt yok. Bundan sonraki girişler burada görünür.')+'</p>';
     const m=$('#lgMore');
-    if(m){m.classList.toggle('off',a.length<=3);m.innerHTML=(lgAll?'Daha Az':'Tümünü Gör')+svg(lgAll?IC_UP:IC_GO,16)}
+    if(m){m.classList.toggle('off',a.length<=3);m.innerHTML=T(lgAll?'Daha Az':'Tümünü Gör')+svg(lgAll?IC_UP:IC_GO,16)}
   }
   function lgLoad(){
     const el=$('#lgList');
     if(!el)return;
-    api('GET','logins').then(function(j){lgItems=j.items||[];lgRender()}).catch(function(){el.innerHTML='<p class="wk-err">Liste alınamadı.</p>'});
+    api('GET','logins').then(function(j){lgItems=j.items||[];lgRender()}).catch(function(){el.innerHTML='<p class="wk-err">'+T('Liste alınamadı.')+'</p>'});
   }
   /* 04-boot.js route() her görünüm değişiminde çağırır: v = '' (Uygulamalar) | acik | davet | durum | bilgi */
   window.panelView=function(v){
@@ -451,13 +450,20 @@
     else if(a==='jump'){vib(10);location.hash=t.dataset.to}
     else if(a==='mout'){api('POST','logout',{}).then(function(){location.href='/'})}
     else if(a==='lgall'){
-      ask({t:'Tüm cihazlardan çıkılsın mı?',d:'Bu cihaz dahil, tüm cihazlardaki oturumlar kapatılır. Tekrar girmek için yönetici anahtarı gerekir.',bad:1}).then(function(y){
+      ask({t:T('Tüm cihazlardan çıkılsın mı?'),d:T('Bu cihaz dahil, tüm cihazlardaki oturumlar kapatılır. Tekrar girmek için yönetici anahtarı gerekir.'),bad:1}).then(function(y){
         if(y)api('POST','logout-all',{}).then(function(){location.href='/'})
       });
     }
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDr()});
   buildDrawer();
+
+  /* Dil değişince panel yeniden yüklenir: kaydedilmemiş iş varsa önce sor */
+  window.nxLangGuard=function(){
+    const sv=$('#pbSave'),n=$('#admN');
+    const dirty=wkChanged().length||(sv&&!sv.disabled)||(n&&n.value.trim());
+    return dirty?ask({t:T('Dil değiştirilsin mi?'),d:T('Sayfa yenilenir; kaydedilmemiş değişiklikler gider.'),bad:1}):Promise.resolve(true);
+  };
 
   let done=false,relist=null;
   /* Yönet ilk açılınca bir kez çizilir (APPS hazır); sonraki açılışta yalnız link listesi yenilenir */
@@ -479,8 +485,8 @@
   }
   const pubs=APPS.map(function(a){
     return '<label class="sw-row" data-id="'+esc(a.id)+'"><img class="sw-ic" src="'+esc(icUrl(a))+'" alt="" width="40" height="40" data-ic="'+esc(a.id)+'">'
-    +'<span class="sw-tx">'+esc(a.name)+'<small>'+esc(a.desc||'')+'</small></span>'
-    +'<input class="sw" type="checkbox" name="pb" value="'+esc(a.id)+'"'+(a.pub?' checked':'')+' aria-label="'+esc(a.name)+' herkese açık"></label>';
+    +'<span class="sw-tx">'+esc(a.name)+'<small>'+esc(T(a.desc||''))+'</small></span>'
+    +'<input class="sw" type="checkbox" name="pb" value="'+esc(a.id)+'"'+(a.pub?' checked':'')+' aria-label="'+esc(T('{name} herkese açık',{name:a.name}))+'"></label>';
   }).join('');
   function kv(ic,k,v,btn){
     const bd='<span class="kv-ic">'+svg(ic,20)+'</span><span class="kv-bd"><span class="kv-k">'+k+'</span><div class="kv-v">'+v+'</div></span>';
@@ -489,62 +495,62 @@
     return btn?'<button class="kv-r" type="button" '+at+'>'+bd+'<span class="kv-go">'+svg(IC_GO,18)+'</span></button>':'<div class="kv-r">'+bd+'</div>';
   }
   box.innerHTML=''
-  +'<section class="sec" data-v="uyg">'+hd(IC_APPS,'Uygulamalar')
-  +'<div class="wk-sum"><div id="wkSum"></div><button class="btn btn-sec" type="button" data-adm="wk">Yenile</button></div>'
-  +'<p class="sec-note">Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, bölüm ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.</p>'
+  +'<section class="sec" data-v="uyg">'+hd(IC_APPS,T('Uygulamalar'))
+  +'<div class="wk-sum"><div id="wkSum"></div><button class="btn btn-sec" type="button" data-adm="wk">'+T('Yenile')+'</button></div>'
+  +'<p class="sec-note">'+T('Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, bölüm ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.')+'</p>'
   +'<div id="wkMsg"></div><div class="wk-list" id="wkList"></div></section>'
   +'<section class="sec" data-v="acik">'
-  +hero('Public Mod',IC_GLOBE,'Uygulamalarını <em>Herkese Aç</em>','Seçtiğin uygulamaları herkese açık hale getir, link ile paylaşılabilir yap.',ART_GLOBE)
-  +note('Herkese açık yaptığın uygulamalar, herkes tarafından erişilebilir olacaktır. Kapalılar yalnız davet linkiyle verilir.')
-  +sh(IC_APPS,'Uygulamalar','<button class="pg-pill" type="button" data-adm="pball" id="pbAll"></button>')
+  +hero(T('Public Mod'),IC_GLOBE,T('Uygulamalarını <em>Herkese Aç</em>'),T('Seçtiğin uygulamaları herkese açık hale getir, link ile paylaşılabilir yap.'),ART_GLOBE)
+  +note(T('Herkese açık yaptığın uygulamalar, herkes tarafından erişilebilir olacaktır. Kapalılar yalnız davet linkiyle verilir.'))
+  +sh(IC_APPS,T('Uygulamalar'),'<button class="pg-pill" type="button" data-adm="pball" id="pbAll"></button>')
   +'<div class="sw-list" id="pbList">'+pubs+'</div>'
-  +'<div class="pb-act"><button class="pb-undo" type="button" data-adm="pbundo" id="pbUndo" aria-label="Değişiklikleri geri al" hidden>'+svg(IC_UNDO,20)+'</button>'
-  +'<button class="btn btn-pri btn-lg pb-save" type="button" data-adm="pbsave" id="pbSave" disabled>'+svg(IC_SEND,22)+'<span>Değişiklikleri Kaydet</span></button></div></section>'
+  +'<div class="pb-act"><button class="pb-undo" type="button" data-adm="pbundo" id="pbUndo" aria-label="'+T('Değişiklikleri geri al')+'" hidden>'+svg(IC_UNDO,20)+'</button>'
+  +'<button class="btn btn-pri btn-lg pb-save" type="button" data-adm="pbsave" id="pbSave" disabled>'+svg(IC_SEND,22)+'<span>'+T('Değişiklikleri Kaydet')+'</span></button></div></section>'
   +'<section class="sec dv" data-v="davet">'
-  +'<div class="dv-hero"><div class="dv-txt"><span class="dv-pill">'+svg(IC_LINK,14)+'Özel davet</span>'
-  +'<h2 class="dv-h">Davet linki <em>oluştur</em></h2>'
-  +'<p class="dv-sub">Süreyi, kullanım hakkını ve notu sen belirle.</p></div>'
+  +'<div class="dv-hero"><div class="dv-txt"><span class="dv-pill">'+svg(IC_LINK,14)+T('Özel davet')+'</span>'
+  +'<h2 class="dv-h">'+T('Davet linki <em>oluştur</em>')+'</h2>'
+  +'<p class="dv-sub">'+T('Süreyi, kullanım hakkını ve notu sen belirle.')+'</p></div>'
   +'<div class="dv-art" aria-hidden="true"><svg class="dv-orbit" viewBox="0 0 220 120" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="110" cy="60" rx="104" ry="32" transform="rotate(-16 110 60)"/></svg>'
   +'<img class="dv-logo" src="icons/icon-512.png" alt="" width="104" height="104"></div></div>'
   +'<form id="admF" class="nv dv-card" novalidate>'
-  +'<div class="dv-ch"><span class="dv-ch-ic">'+svg(IC_LINK,24)+'</span><h3 class="dv-ch-t">Link oluşturma ayarları</h3></div>'
-  +'<div><div class="nv-h"><span>Paylaşılacak uygulamalar</span><span class="nv-r"><b id="nvCnt"></b>'
+  +'<div class="dv-ch"><span class="dv-ch-ic">'+svg(IC_LINK,24)+'</span><h3 class="dv-ch-t">'+T('Link oluşturma ayarları')+'</h3></div>'
+  +'<div><div class="nv-h"><span>'+T('Paylaşılacak uygulamalar')+'</span><span class="nv-r"><b id="nvCnt"></b>'
   +(APPS.length>1?'<button class="nv-all" type="button" data-adm="apall" id="nvAll"></button>':'')+'</span></div>'
-  +(APPS.length?'<div class="ap-grid">'+tiles+'</div>':'<p class="inf-note">Henüz Nexus\'ta görünen uygulama yok. Menüden Uygulamalar ekranına girip istediklerini aç.</p>')
+  +(APPS.length?'<div class="ap-grid">'+tiles+'</div>':'<p class="inf-note">'+T('Henüz Nexus\'ta görünen uygulama yok. Menüden Uygulamalar ekranına girip istediklerini aç.')+'</p>')
   +'</div>'
-  +'<div class="fl-row">'+fld('dur',IC_CLOCK,'SÜRE')+fld('use',IC_REPEAT,'KULLANIM')+'</div>'
-  +'<div class="dv-nt"><textarea id="admN" class="inv-in nv-ta" maxlength="120" rows="1" placeholder="Karşılama notu (isteğe bağlı)" aria-label="Karşılama notu"></textarea><b id="nvNc" class="dv-nc">0/120</b></div>'
+  +'<div class="fl-row">'+fld('dur',IC_CLOCK,T('SÜRE'))+fld('use',IC_REPEAT,T('KULLANIM'))+'</div>'
+  +'<div class="dv-nt"><textarea id="admN" class="inv-in nv-ta" maxlength="120" rows="1" placeholder="'+T('Karşılama notu (isteğe bağlı)')+'" aria-label="'+T('Karşılama notu')+'"></textarea><b id="nvNc" class="dv-nc">0/120</b></div>'
   +'<div class="nv-sum" id="nvSum"></div>'
-  +'<button class="btn btn-pri btn-lg dv-go" type="submit">'+svg(IC_LINK,22)+'<span>Link oluştur</span><i class="dv-go-ar">'+svg(IC_ARROW,18)+'</i></button>'
+  +'<button class="btn btn-pri btn-lg dv-go" type="submit">'+svg(IC_LINK,22)+'<span>'+T('Link oluştur')+'</span><i class="dv-go-ar">'+svg(IC_ARROW,18)+'</i></button>'
   +'</form>'
   +'<div id="admR" class="adm-res"></div>'
   +'<div class="lk-acc" id="lkAcc">'
   +'<button class="lk-tg" type="button" id="lkTg" data-adm="tg" aria-expanded="false" aria-controls="lkPn">'
-  +'<span class="lk-tg-ic">'+svg(IC_BARS,22)+'</span><span class="lk-tg-t">Aktif linkler</span><b class="lk-tg-n" id="lkCnt"></b>'
+  +'<span class="lk-tg-ic">'+svg(IC_BARS,22)+'</span><span class="lk-tg-t">'+T('Aktif linkler')+'</span><b class="lk-tg-n" id="lkCnt"></b>'
   +'<span class="lk-tg-ch">'+svg(IC_CHEV,20)+'</span></button>'
   +'<div class="lk-pn" id="lkPn" inert><div class="lk-pn-in">'
   +'<div id="admL" class="inv-list"></div>'
-  +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'
+  +'<div class="dv-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><p>'+T('Linkleri yalnızca sen yönetirsin. İstediğin zaman tek tek ya da hepsini iptal edebilirsin.')+'</p><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>'
   +'</div></div></div></section>'
   +'<section class="sec" data-v="durum">'
-  +hero('',0,'Uygulama <em>durumu</em>','Uygulamalarının güncel durumunu buradan görüntüleyebilirsin.')
+  +hero('',0,T('Uygulama <em>durumu</em>'),T('Uygulamalarının güncel durumunu buradan görüntüleyebilirsin.'))
   +'<div id="admS"></div></section>'
   +'<section class="sec" data-v="bilgi">'
-  +hero('Uygulama Bilgileri',IC_INFO,'<em>Nexus</em>','Daha fazlası için, her zaman seninle.')
+  +hero(T('Uygulama Bilgileri'),IC_INFO,'<em>Nexus</em>',T('Daha fazlası için, her zaman seninle.'))
   +'<div class="info-hero"><span class="info-lg"><img class="info-logo" src="icons/icon-192.png" alt="" width="64" height="64"></span>'
   +'<div class="info-bd"><div class="info-nm">Nexus</div><span id="nxVer" class="ver lg off"></span></div>'
-  +'<span id="nxUp" class="info-ok off">'+svg(IC_CHECKC,18)+'<span>Son Sürüm</span></span></div>'
+  +'<span id="nxUp" class="info-ok off">'+svg(IC_CHECKC,18)+'<span>'+T('Son Sürüm')+'</span></span></div>'
   +'<div class="kv">'
-  +kv(IC_CAL,'Son Push','<span id="kvPush"></span>')
-  +kv(IC_IMG,'Simgeler','<p id="netState" class="inf-st" role="status"></p>','uyg')
-  +kv(IC_SUN,'Tema','<span data-bind="theme"></span>','theme')
-  +kv(IC_SND,'Tıklama Sesi','<span data-bind="snd"></span>','snd')
+  +kv(IC_CAL,T('Son Push'),'<span id="kvPush"></span>')
+  +kv(IC_IMG,T('Simgeler'),'<p id="netState" class="inf-st" role="status"></p>','uyg')
+  +kv(IC_SUN,T('Tema'),'<span data-bind="theme"></span>','theme')
+  +kv(IC_SND,T('Tıklama Sesi'),'<span data-bind="snd"></span>','snd')
   +'</div>'
-  +sh(IC_BARS,'Son Girişler','<button class="pg-pill off" type="button" data-adm="lgmore" id="lgMore"></button>')
+  +sh(IC_BARS,T('Son Girişler'),'<button class="pg-pill off" type="button" data-adm="lgmore" id="lgMore"></button>')
   +'<div id="lgList" class="ses-list"></div>'
-  +'<div class="adm-row pg-row"><button class="btn btn-sec pg-btn" type="button" data-act="lgall">Tüm cihazlardan çık</button></div>'
-  +note('Nexus, güvenli ve kararlı bir şekilde kullanılmak üzere tasarlanmıştır.')+'</section>'
-  +'<div class="g-ft pn-ft"><div class="g-ft-nm"><img src="icons/icon-192.png" alt="" width="30" height="30"><b>Nexus</b></div><p>Daha fazlası için, her zaman seninle.</p></div>';
+  +'<div class="adm-row pg-row"><button class="btn btn-sec pg-btn" type="button" data-act="lgall">'+T('Tüm cihazlardan çık')+'</button></div>'
+  +note(T('Nexus, güvenli ve kararlı bir şekilde kullanılmak üzere tasarlanmıştır.'))+'</section>'
+  +'<div class="g-ft pn-ft"><div class="g-ft-nm"><img src="icons/icon-192.png" alt="" width="30" height="30"><b>Nexus</b></div><p>'+T('Daha fazlası için, her zaman seninle.')+'</p></div>';
 
   /* Kaydet / geri al çubuğu (Herkese açık): değişiklik olunca altta çıkar */
   let savedPub=APPS.filter(function(a){return a.pub}).map(function(a){return a.id});
@@ -553,11 +559,11 @@
   bar.id='saveBar';
   bar.className='savebar';
   bar.setAttribute('role','region');
-  bar.setAttribute('aria-label','Kaydedilmemiş değişiklikler');
+  bar.setAttribute('aria-label',T('Kaydedilmemiş değişiklikler'));
   bar.inert=true;
   bar.innerHTML='<div class="savebar-tx" id="sbTx"></div>'
-    +'<button class="btn btn-sec" type="button" data-sb="undo">Geri al</button>'
-    +'<button class="btn btn-pri" type="button" data-sb="save">Kaydet</button>';
+    +'<button class="btn btn-sec" type="button" data-sb="undo">'+T('Geri al')+'</button>'
+    +'<button class="btn btn-pri" type="button" data-sb="save">'+T('Kaydet')+'</button>';
   document.body.appendChild(bar);
   function pubChanged(){
     const now=$$('input[name=pb]:checked',box).map(function(x){return x.value});
@@ -570,18 +576,18 @@
     });
     /* Kaydet / Geri al artık listenin altında yapışkan düğme; alttan çıkan çubuk kullanılmaz */
     const sv=$('#pbSave'),un=$('#pbUndo'),all=$('#pbAll');
-    if(sv){sv.disabled=saving||!ch.length;sv.parentNode.classList.toggle('chg',ch.length>0);$('span',sv).textContent=saving?'Kaydediliyor…':ch.length?'Değişiklikleri Kaydet ('+ch.length+')':'Değişiklikleri Kaydet'}
+    if(sv){sv.disabled=saving||!ch.length;sv.parentNode.classList.toggle('chg',ch.length>0);$('span',sv).textContent=saving?T('Kaydediliyor…'):T('Değişiklikleri Kaydet')+(ch.length?' ('+ch.length+')':'')}
     if(un)un.hidden=!ch.length||saving;
     if(all){
       const n=$$('input[name=pb]',box),on=n.filter(function(x){return x.checked}).length;
-      all.innerHTML=(n.length&&on===n.length?'Seçimi Kaldır':'Tümünü Seç')+svg(IC_CHECK,16);
+      all.innerHTML=T(n.length&&on===n.length?'Seçimi Kaldır':'Tümünü Seç')+svg(IC_CHECK,16);
       all.classList.toggle('off',!n.length);
     }
   };
   function pubUndo(){
     $$('input[name=pb]',box).forEach(function(x){x.checked=savedPub.indexOf(x.value)>=0});
     pubSync();
-    toast('Değişiklikler geri alındı');
+    toast(T('Değişiklikler geri alındı'));
     vib(12);
   }
   function pubSave(){
@@ -590,7 +596,7 @@
     saving=true;
     pubSync();
     api('POST','public',{ids:ids}).then(function(j){
-      if(!j.ok){toast(j.e||'Kaydedilemedi','err');return}
+      if(!j.ok){toast(Ts(j.e||'Kaydedilemedi'),'err');return}
       savedPub=j.ids||ids;
       APPS.forEach(function(a){
         a.pub=savedPub.indexOf(a.id)>=0;
@@ -601,8 +607,8 @@
       pubSync();
       if(window.renderApps)renderApps();   /* önizleme güncellensin */
       vib([20,40,20]);
-      toast('Kaydedildi','ok',savedPub.length+' uygulama herkese açık');
-    }).catch(function(){toast('Kaydedilemedi','err','Bağlantını kontrol et')})
+      toast(T('Kaydedildi'),'ok',T('{n} uygulama herkese açık',{n:savedPub.length}));
+    }).catch(function(){toast(T('Kaydedilemedi'),'err',T('Bağlantını kontrol et'))})
       .then(function(){saving=false;pubSync()});
   }
   bar.addEventListener('click',function(e){
@@ -625,21 +631,21 @@
     const ap=L.apps.map(function(id){return APPS.find(function(x){return x.id===id})}).filter(Boolean);
     const ics=ap.slice(0,4).map(function(a){return '<img src="'+esc(icUrl(a))+'" alt="" width="36" height="36" data-ic="'+esc(a.id)+'">'}).join('');
     const chip=function(ic,t,c){return '<span class="lk-chip'+(c?' '+c:'')+'">'+svg(ic,13)+esc(t)+'</span>'};
-    const chips=(L.exp?(m<=0?chip(IC_CLOCK,'Süresi doldu','warn'):chip(IC_CLOCK,fmtS(m)+' kaldı')):chip(IC_CLOCK,'Süresiz'))
-      +chip(IC_REPEAT,mx?hits+' / '+mx+' kullanıldı':hits+' açılış')
-      +(L.apps.length>1?'<span class="lk-chip">Paket</span>':'');
-    const bars=(L.exp&&L.created?'<div class="lk-bar" title="Kalan süre"><i style="--w:'+pct((L.exp-now)/(L.exp-L.created)*100)+'%"></i></div>':'')
-      +(mx?'<div class="lk-bar" title="Kalan hak"><i style="--w:'+pct((mx-hits)/mx*100)+'%"></i></div>':'');
+    const chips=(L.exp?(m<=0?chip(IC_CLOCK,T('Süresi doldu'),'warn'):chip(IC_CLOCK,T('{t} kaldı',{t:fmtS(m)}))):chip(IC_CLOCK,T('Süresiz')))
+      +chip(IC_REPEAT,mx?T('{a} / {b} kullanıldı',{a:hits,b:mx}):T('{n} açılış',{n:hits}))
+      +(L.apps.length>1?'<span class="lk-chip">'+T('Paket')+'</span>':'');
+    const bars=(L.exp&&L.created?'<div class="lk-bar" title="'+T('Kalan süre')+'"><i style="--w:'+pct((L.exp-now)/(L.exp-L.created)*100)+'%"></i></div>':'')
+      +(mx?'<div class="lk-bar" title="'+T('Kalan hak')+'"><i style="--w:'+pct((mx-hits)/mx*100)+'%"></i></div>':'');
     const u=esc(location.origin+'/g/'+L.code);
     const dead=L.exp&&m<=0;
     return '<div class="lk"><div class="lk-top"><div class="lk-ics">'+ics+'</div>'
       +'<div class="lk-tx"><div class="lk-hd"><div class="lk-nm">'+esc(L.apps.map(name).join(', '))+'</div>'
-      +'<span class="lk-st'+(dead?' warn':'')+'">'+(dead?'Süresi doldu':'Aktif')+'</span></div>'
+      +'<span class="lk-st'+(dead?' warn':'')+'">'+T(dead?'Süresi doldu':'Aktif')+'</span></div>'
       +'<div class="lk-chips">'+chips+'</div></div></div>'
       +bars+(L.note?'<div class="lk-note">'+esc(L.note)+'</div>':'')
-      +'<div class="lk-ac"><button class="btn btn-sec" type="button" data-adm="cp" data-u="'+u+'">'+svg(IC_COPY,18)+'Kopyala</button>'
-      +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">'+svg(IC_SEND,18)+'Paylaş</button>'
-      +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">'+svg(IC_TRASH,18)+'İptal</button></div></div>';
+      +'<div class="lk-ac"><button class="btn btn-sec" type="button" data-adm="cp" data-u="'+u+'">'+svg(IC_COPY,18)+T('Kopyala')+'</button>'
+      +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+u+'">'+svg(IC_SEND,18)+T('Paylaş')+'</button>'
+      +'<button class="btn btn-sec lk-del" type="button" data-adm="del" data-c="'+esc(L.code)+'">'+svg(IC_TRASH,18)+T('İptal')+'</button></div></div>';
   }
   /* Aktif linkler: kapalı şerit, dokununca animasyonla açılır */
   function lkToggle(open){
@@ -653,48 +659,48 @@
   function list(){
     return api('GET','links').then(function(rows){
       $('#admL').innerHTML=rows.length?rows.map(lkCard).join('')
-        +'<div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button>'
-        +(rows.length>1?'<button class="btn btn-sec lk-del" type="button" data-adm="clr">Hepsini iptal et</button>':'')+'</div>'
-        :'<p class="inf-note">Aktif link yok.</p><div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+'Yenile</button></div>';
+        +'<div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+T('Yenile')+'</button>'
+        +(rows.length>1?'<button class="btn btn-sec lk-del" type="button" data-adm="clr">'+T('Hepsini iptal et')+'</button>':'')+'</div>'
+        :'<p class="inf-note">'+T('Aktif link yok.')+'</p><div class="lk-foot"><button class="btn btn-sec lk-rf" type="button" data-adm="rf">'+svg(IC_REFRESH,18)+T('Yenile')+'</button></div>';
       liveApply($('#admL'));
       tx('#lkCnt',rows.length||'');
       tx('[data-cnt="davet"]',rows.length||'');
       return true;
-    }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">Liste alınamadı: '+esc(e&&e.message||e||'hata')+'</p>';return false});
+    }).catch(function(e){$('#admL').innerHTML='<p class="inf-note">'+T('Liste alınamadı')+': '+esc(e&&e.message||e||T('hata'))+'</p>';return false});
   }
 
   /* ---------- Davet formu: süre ve kullanım için açılır pencereler ---------- */
   const inv={mins:1440,max:0};   /* mins: 0 = süresiz · max: 0 = sınırsız */
-  const DUR=[[30,'30 dk'],[60,'1 saat'],[360,'6 saat'],[1440,'1 gün'],[10080,'7 gün'],[43200,'30 gün'],[0,'Süresiz']];
-  const USE=[[0,'Sınırsız'],[1,'1'],[3,'3'],[5,'5'],[10,'10'],[25,'25']];
-  const UN=[['dk',1],['sa',60],['gün',1440]];
+  const DUR=[30,60,360,1440,10080,43200,0].map(function(m){return [m,m===60?T('1 saat'):m===360?T('6 saat'):fmtM(m)]});
+  const USE=[[0,T('Sınırsız')],[1,'1'],[3,'3'],[5,'5'],[10,'10'],[25,'25']];
+  const UN=[[T('dk'),1],[T('sa'),60],[T('gün'),1440]];
   const MAXM=525600;   /* en çok 365 gün */
   function invUp(){
     const n=$$('input[name=ap]:checked',box).length;
     const tot=$$('input[name=ap]',box).length;
     tx('#nvCnt',n+'/'+tot);
-    tx('#nvAll',n&&n===tot?'Temizle':'Tümü');
+    tx('#nvAll',T(n&&n===tot?'Temizle':'Tümü'));
     tx('#fv-dur',fmtM(inv.mins));
-    tx('#fv-use',inv.max?inv.max+' kullanım':'Sınırsız');
-    $('#nvSum').innerHTML=(n?'<b>'+n+' uygulama</b>'+(n>1?' (paket)':''):'<b>Uygulama seç</b>')
-      +' · '+(inv.mins?'<b>'+esc(fmtM(inv.mins))+'</b>':'<b>süresiz</b>')
-      +' · '+(inv.max?'<b>'+inv.max+' kullanım</b>':'<b>sınırsız</b> kullanım');
+    tx('#fv-use',inv.max?T('{n} kullanım',{n:inv.max}):T('Sınırsız'));
+    $('#nvSum').innerHTML=(n?'<b>'+T('{n} uygulama',{n:n})+'</b>'+(n>1?' '+T('(paket)'):''):'<b>'+T('Uygulama seç')+'</b>')
+      +' · '+(inv.mins?'<b>'+esc(fmtM(inv.mins))+'</b>':'<b>'+T('süresiz')+'</b>')
+      +' · '+(inv.max?'<b>'+T('{n} kullanım',{n:inv.max})+'</b>':T('<b>sınırsız</b> kullanım'));
   }
   function chipsHtml(list,cur,attr){
     return list.map(function(x,i){return '<button class="pp-chip" type="button" '+attr+'="'+x[0]+'" aria-pressed="'+(x[0]===cur)+'" style="--i:'+i+'">'+x[1]+'</button>'}).join('');
   }
   function stepper(v,max){
-    return '<div class="pp-big"><button class="pp-step" type="button" data-d="-1" aria-label="Azalt">−</button>'
-      +'<input class="pp-num" id="ppN" type="number" inputmode="numeric" min="1" max="'+max+'" value="'+v+'" aria-label="Değer">'
-      +'<button class="pp-step" type="button" data-d="1" aria-label="Artır">+</button></div>';
+    return '<div class="pp-big"><button class="pp-step" type="button" data-d="-1" aria-label="'+T('Azalt')+'">−</button>'
+      +'<input class="pp-num" id="ppN" type="number" inputmode="numeric" min="1" max="'+max+'" value="'+v+'" aria-label="'+T('Değer')+'">'
+      +'<button class="pp-step" type="button" data-d="1" aria-label="'+T('Artır')+'">+</button></div>';
   }
   function popDur(){
     let u=!inv.mins?2:inv.mins%1440===0?2:inv.mins%60===0?1:0;
     const v=inv.mins?inv.mins/UN[u][1]:1;
-    popSheet(ppHead('Geçerlilik süresi','Link bu süre dolunca kapanır')
+    popSheet(ppHead(T('Geçerlilik süresi'),T('Link bu süre dolunca kapanır'))
       +'<div class="pp-chips">'+chipsHtml(DUR,inv.mins,'data-m')+'</div>'
-      +'<div class="pp-h">ÖZEL SÜRE</div>'+stepper(v,MAXM)
-      +'<div class="seg" id="ppU" role="group" aria-label="Birim">'+UN.map(function(x,i){return '<button class="seg-b" type="button" data-u="'+i+'" aria-pressed="'+(i===u)+'">'+x[0]+'</button>'}).join('')+'</div>'
+      +'<div class="pp-h">'+T('ÖZEL SÜRE')+'</div>'+stepper(v,MAXM)
+      +'<div class="seg" id="ppU" role="group" aria-label="'+T('Birim')+'">'+UN.map(function(x,i){return '<button class="seg-b" type="button" data-u="'+i+'" aria-pressed="'+(i===u)+'">'+x[0]+'</button>'}).join('')+'</div>'
       +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="ppOk"></button></div>',
     function(b){
       const n=$('#ppN',b),ok=$('#ppOk',b);
@@ -702,7 +708,7 @@
       const lab=function(){
         const m=cur();
         ok.disabled=!(m>0&&m<=MAXM);
-        ok.textContent=m>MAXM?'En çok 365 gün':m>0?fmtM(m)+' olarak ayarla':'Geçerli bir süre gir';
+        ok.textContent=m>MAXM?T('En çok 365 gün'):m>0?T('{t} olarak ayarla',{t:fmtM(m)}):T('Geçerli bir süre gir');
       };
       lab();
       b.addEventListener('click',function(e){
@@ -716,10 +722,10 @@
     });
   }
   function popUse(){
-    popSheet(ppHead('Kullanım sayısı','Link bu kadar açılınca kapanır')
+    popSheet(ppHead(T('Kullanım sayısı'),T('Link bu kadar açılınca kapanır'))
       +'<div class="pp-chips">'+chipsHtml(USE,inv.max,'data-k')+'</div>'
-      +'<div class="pp-h">ÖZEL SAYI</div>'+stepper(inv.max||5,1000)
-      +'<p class="sh-note">Link her açıldığında 1 hak düşer; sayfayı yenilemek de hak harcar. Hak bitince link kendiliğinden kapanır.</p>'
+      +'<div class="pp-h">'+T('ÖZEL SAYI')+'</div>'+stepper(inv.max||5,1000)
+      +'<p class="sh-note">'+T('Link her açıldığında 1 hak düşer; sayfayı yenilemek de hak harcar. Hak bitince link kendiliğinden kapanır.')+'</p>'
       +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="ppOk"></button></div>',
     function(b){
       const n=$('#ppN',b),ok=$('#ppOk',b);
@@ -727,7 +733,7 @@
       const lab=function(){
         const k=cur();
         ok.disabled=!(k>0&&k<=1000);
-        ok.textContent=k>1000?'En çok 1000':k>0?k+' kullanım olarak ayarla':'Geçerli bir sayı gir';
+        ok.textContent=k>1000?T('En çok 1000'):k>0?T('{t} olarak ayarla',{t:T('{n} kullanım',{n:k})}):T('Geçerli bir sayı gir');
       };
       lab();
       b.addEventListener('click',function(e){
@@ -745,17 +751,17 @@
   function status(){
     const el=$('#admS');
     const n=APPS.length;
-    if(!n){el.innerHTML='<p class="inf-note">Uygulama listesi boş.</p>';return}
+    if(!n){el.innerHTML='<p class="inf-note">'+T('Uygulama listesi boş.')+'</p>';return}
     el.innerHTML='<div class="stx-sum" id="stSum"><div class="stx-ring" id="stRing"><span id="stPct"></span></div>'
       +'<div class="stx-tx"><div class="stx-big" id="stBig"></div><div class="stx-small" id="stSm"></div></div>'
       +'<svg class="stx-ekg" viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 30h38l7-18 10 40 9-30 6 8h50"/></svg></div>'
-      +sh(IC_APPS,'Uygulama Durumları','<button class="pg-pill pg-ic" id="stRf" type="button" data-adm="st" aria-label="Durumu yenile" title="Durumu yenile">'+svg(IC_REFRESH,18)+'</button>')
+      +sh(IC_APPS,T('Uygulama Durumları'),'<button class="pg-pill pg-ic" id="stRf" type="button" data-adm="st" aria-label="'+T('Durumu yenile')+'" title="'+T('Durumu yenile')+'">'+svg(IC_REFRESH,18)+'</button>')
       +'<div class="stx-list">'+APPS.map(function(a){
         return '<a class="stx" data-st="'+esc(a.id)+'" href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="stx-ic" src="'+esc(icUrl(a))+'" alt="" width="52" height="52" data-ic="'+esc(a.id)+'">'
-        +'<div class="stx-bd"><div class="stx-nm">'+esc(a.name)+'</div><div class="stx-ms">Bekleniyor…</div></div>'
-        +'<span class="stx-pill wait">Kontrol</span><i class="stx-go">'+svg(IC_GO,18)+'</i></a>';
+        +'<div class="stx-bd"><div class="stx-nm">'+esc(a.name)+'</div><div class="stx-ms">'+T('Bekleniyor…')+'</div></div>'
+        +'<span class="stx-pill wait">'+T('Kontrol')+'</span><i class="stx-go">'+svg(IC_GO,18)+'</i></a>';
       }).join('')+'</div>'
-      +'<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><div class="pg-nt"><b>Durum Bilgisi</b><p id="stNt"></p></div><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>';
+      +'<div class="dv-note pg-note"><span class="dv-note-ic">'+svg(IC_INFO,22)+'</span><div class="pg-nt"><b>'+T('Durum Bilgisi')+'</b><p id="stNt"></p></div><span class="dv-note-sh">'+svg(IC_SHIELD,40)+'</span></div>';
     let done=0,up=0;
     const run=++stRun;   /* yenileyince eski kontrolün geç gelen yanıtları yeni ekranı bozmasın */
     function upd(){
@@ -765,9 +771,9 @@
       if(rf){rf.classList.toggle('spin',!fin);rf.disabled=!fin}
       $('#stRing').style.setProperty('--p',Math.round(up/n*100));
       $('#stPct').textContent=fin?Math.round(up/n*100)+'%':done+'/'+n;
-      $('#stBig').innerHTML=!fin?'Kontrol ediliyor…':up===n?'Hepsi çalışıyor<i class="stx-ok">'+svg(IC_CHECKC,22)+'</i>':up+' / '+n+' çalışıyor';
-      $('#stSm').textContent=fin?(up===n?'Tüm uygulamalar sorunsuz çalışıyor.':(n-up)+' uygulama yanıt vermiyor.'):'Biraz sürebilir.';
-      $('#stNt').textContent=fin?(up===n?'Tüm uygulamalar şu anda aktif ve sorunsuz çalışıyor.':(n-up)+' uygulama şu anda yanıt vermiyor.'):'Uygulamalar kontrol ediliyor…';
+      $('#stBig').innerHTML=!fin?T('Kontrol ediliyor…'):up===n?T('Hepsi çalışıyor')+'<i class="stx-ok">'+svg(IC_CHECKC,22)+'</i>':T('{a} / {b} çalışıyor',{a:up,b:n});
+      $('#stSm').textContent=fin?(up===n?T('Tüm uygulamalar sorunsuz çalışıyor.'):T('{n} uygulama yanıt vermiyor.',{n:n-up})):T('Biraz sürebilir.');
+      $('#stNt').textContent=fin?(up===n?T('Tüm uygulamalar şu anda aktif ve sorunsuz çalışıyor.'):T('{n} uygulama şu anda yanıt vermiyor.',{n:n-up})):T('Uygulamalar kontrol ediliyor…');
       $('#stSum').classList.toggle('bad',fin&&up<n);
     }
     upd();
@@ -783,10 +789,10 @@
           done++;if(r.ok)up++;
           const row=$('.stx[data-st="'+a.id+'"]',el);
           if(row){
-            $('.stx-ms',row).textContent=r.ok?'Yanıt süresi: '+r.ms+' ms':'Yanıt gelmedi';
+            $('.stx-ms',row).textContent=r.ok?T('Yanıt süresi: {n} ms',{n:r.ms}):T('Yanıt gelmedi');
             const pl=$('.stx-pill',row);
             pl.className='stx-pill'+(r.ok?'':' bad');
-            pl.textContent=r.ok?'Çalışıyor':'Açılmıyor';
+            pl.textContent=T(r.ok?'Çalışıyor':'Açılmıyor');
           }
           upd();
         });
@@ -798,7 +804,7 @@
     const a=t.dataset.adm;
     if(a==='cp'){
       const rc=t.closest('.nv-res');
-      try{navigator.clipboard.writeText(t.dataset.u).then(function(){toast('Link kopyalandı','ok');if(rc)rc.classList.add('copied')},function(){toast('Kopyalanamadı','err')})}catch(x){toast('Kopyalanamadı','err')}
+      try{navigator.clipboard.writeText(t.dataset.u).then(function(){toast(T('Link kopyalandı'),'ok');if(rc)rc.classList.add('copied')},function(){toast(T('Kopyalanamadı'),'err')})}catch(x){toast(T('Kopyalanamadı'),'err')}
     }
     else if(a==='xres'){
       const c=t.closest('.nv-res');
@@ -822,10 +828,10 @@
     else if(a==='pbsave'){pubSave()}
     else if(a==='pbundo'){pubUndo()}
     else if(a==='lgmore'){lgAll=!lgAll;lgRender()}
-    else if(a==='sh'){if(navigator.share)navigator.share({url:t.dataset.u}).catch(function(){});else toast('Paylaşım yok, kopyala')}
+    else if(a==='sh'){if(navigator.share)navigator.share({url:t.dataset.u}).catch(function(){});else toast(T('Paylaşım yok, kopyala'))}
     else if(a==='del'){api('DELETE','links/'+t.dataset.c).then(list)}
     else if(a==='clr'){
-      ask({t:'Tüm linkler iptal edilsin mi?',d:'Aktif olan bütün davet linkleri hemen çalışmaz hale gelir.',bad:1}).then(function(y){
+      ask({t:T('Tüm linkler iptal edilsin mi?'),d:T('Aktif olan bütün davet linkleri hemen çalışmaz hale gelir.'),bad:1}).then(function(y){
         if(y)api('POST','links/clear',{}).then(list)
       });
     }
@@ -834,11 +840,11 @@
     else if(a==='rf'){
       if(t.classList.contains('spin'))return;
       t.classList.add('spin');t.disabled=true;
-      list().then(function(ok){if(ok)toast('Linkler güncellendi','ok')}).then(function(){t.classList.remove('spin');t.disabled=false});
+      list().then(function(ok){if(ok)toast(T('Linkler güncellendi'),'ok')}).then(function(){t.classList.remove('spin');t.disabled=false});
     }
     else if(a==='wk'){
       if(!wkChanged().length){wkLoad(true);return}
-      ask({t:'Değişiklikler silinsin mi?',d:'Kaydedilmemiş değişiklikler listeyi yenileyince gider.',bad:1}).then(function(y){if(y)wkLoad(true)});
+      ask({t:T('Değişiklikler silinsin mi?'),d:T('Kaydedilmemiş değişiklikler listeyi yenileyince gider.'),bad:1}).then(function(y){if(y)wkLoad(true)});
     }
   });
   box.addEventListener('click',function(e){
@@ -851,18 +857,18 @@
   $('#admF').addEventListener('submit',function(e){
     e.preventDefault();
     const ids=$$('input[name=ap]:checked',box).map(function(x){return x.value});
-    if(!ids.length){toast('Uygulama seç','err');return}
+    if(!ids.length){toast(T('Uygulama seç'),'err');return}
     const btn=$('button[type=submit]',e.target);
     btn.disabled=true;
     api('POST','links',{apps:ids,minutes:inv.mins,max:inv.max,note:$('#admN').value}).then(function(r){
-      if(!r.url){toast(r.e||'Hata','err');return}
-      toast('Link hazır','ok','Kopyala ya da paylaş');
+      if(!r.url){toast(Ts(r.e||'Hata'),'err');return}
+      toast(T('Link hazır'),'ok',T('Kopyala ya da paylaş'));
       vib([20,40,20]);
       $('#admN').value='';$('#admN').style.height='';tx('#nvNc','0/120');
-      $('#admR').innerHTML='<div class="nv-res"><button class="nv-res-x" type="button" data-adm="xres" aria-label="Kartı kapat">'+svg(IC_CLOSE,18)+'</button><div class="nv-res-h">'+svg(IC_CHECK,18)+'Link hazır</div>'
+      $('#admR').innerHTML='<div class="nv-res"><button class="nv-res-x" type="button" data-adm="xres" aria-label="'+T('Kartı kapat')+'">'+svg(IC_CLOSE,18)+'</button><div class="nv-res-h">'+svg(IC_CHECK,18)+T('Link hazır')+'</div>'
         +'<input class="adm-in" readonly value="'+esc(r.url)+'" onfocus="this.select()">'
-        +'<div class="adm-row"><button class="btn btn-pri" type="button" data-adm="cp" data-u="'+esc(r.url)+'">Kopyala</button>'
-        +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+esc(r.url)+'">Paylaş</button></div></div>';
+        +'<div class="adm-row"><button class="btn btn-pri" type="button" data-adm="cp" data-u="'+esc(r.url)+'">'+T('Kopyala')+'</button>'
+        +'<button class="btn btn-sec" type="button" data-adm="sh" data-u="'+esc(r.url)+'">'+T('Paylaş')+'</button></div></div>';
       list().then(function(){lkToggle(true)});
     }).catch(function(){}).then(function(){btn.disabled=false});
   });
@@ -875,7 +881,7 @@
     if(!e||!r)return;
     const w=!!(r.waiting||r.installing);
     e.classList.toggle('warn',w);
-    $('span',e).textContent=w?'Yeni sürüm':'Son Sürüm';
+    $('span',e).textContent=T(w?'Yeni sürüm':'Son Sürüm');
     e.classList.remove('off');
   }).catch(function(){});
   pushInto($('#kvPush'),true);

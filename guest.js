@@ -12,24 +12,47 @@ const G_IC_GRID='<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y
 const G_IC_INF='<path d="M7 12c0-2 1.5-4 3.5-4s3 3 3.5 4 1.5 4 3.5 4 3.5-2 3.5-4-1.5-4-3.5-4-3 3-3.5 4-1.5 4-3.5 4S7 14 7 12z"/>';
 function gLeft(exp){
   const m=Math.round((exp-Date.now())/60000);
-  if(m<=0)return 'Süresi doldu';
-  if(m<60)return m+' dk geçerli';
-  if(m<1440)return Math.round(m/60)+' sa geçerli';
-  return Math.round(m/1440)+' gün geçerli';
+  if(m<=0)return T('Süresi doldu');
+  if(m<60)return T('{n} dk geçerli',{n:m});
+  if(m<1440)return T('{n} sa geçerli',{n:Math.round(m/60)});
+  return T('{n} gün geçerli',{n:Math.round(m/1440)});
 }
 function gChip(ic,t){return '<span class="chip">'+svg(ic,14)+esc(t)+'</span>'}
 /* Tek liste: kartlar 02-apps.js'teki appCard ile çizilir (canlı simge çekme çalışsın diye), her karta bölüm etiketi eklenir.
    02-apps.js renderApps bu sayfada gRender'ı çağırır. */
 function gRender(){
   const n=APPS.length;
-  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(G_IC_GRID,22)+'</span><h2 class="g-sh-t">Sana özel uygulamalar</h2>'
-    +'<span class="g-cnt">'+n+' Uygulama</span></div>';
+  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(G_IC_GRID,22)+'</span><h2 class="g-sh-t">'+T('Sana özel uygulamalar')+'</h2>'
+    +'<span class="g-cnt">'+T('{n} Uygulama',{n:n})+'</span></div>';
   const cards=APPS.map(function(a){
     const s=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
-    return appCard(a).replace('</p></div>','</p><span class="g-tag">'+svg(s.ic,13)+esc(s.title)+'</span></div>');
+    return appCard(a).replace('</p></div>','</p><span class="g-tag">'+svg(s.ic,13)+esc(T(s.title))+'</span></div>');
   }).join('');
   return '<section class="sec">'+hd+'<div class="sec-list">'+cards+'</div></section>';
 }
+/* Davet yanıtı bellekte tutulur: dil değişince yeniden istek atılmaz (her istek bir kullanım hakkı düşer) */
+let G_RES=null;
+function gMeta(){
+  const j=G_RES;
+  if(!j)return;
+  const w=document.getElementById('welcome');
+  if(w&&j.note){
+    w.innerHTML='<span class="g-note-ic">'+svg(G_IC_MAIL,30)+'</span>'
+      +'<div class="g-note-bd"><span class="g-note-lb">'+T('SANA ÖZEL MESAJ')+'</span><p class="g-note-tx">'+esc(j.note)+'</p>'
+      +'<span class="g-note-by">'+svg(G_IC_USER,14)+T('Nexus tarafından gönderildi')+'</span></div>'
+      +'<span class="g-note-ok">'+svg(G_IC_OK,14)+T('Özel')+'</span>';
+    w.classList.remove('off');
+  }
+  const sub=document.getElementById('gSub');
+  if(sub)sub.textContent=T(APPS.length>1?'Nexus tarafından seninle özel olarak paylaşılan uygulamalar.':'Nexus tarafından seninle özel olarak paylaşılan uygulama.');
+  const ch=document.getElementById('gChips');
+  if(ch){
+    ch.innerHTML=(j.exp?gChip(G_IC_CLOCK,gLeft(j.exp)):gChip(G_IC_INF,T('Süresiz erişim')))
+      +(j.max===1||(!j.max&&j.once)?gChip(G_IC_ONCE,T('Tek kullanımlık · sayfayı yenileme'))
+        :j.max>1?gChip(G_IC_ONCE,(j.left>0?T('{n} hak kaldı',{n:j.left}):T('Son hak'))+' · '+T('yenileme hak harcar')):'');
+  }
+}
+window.addEventListener('nx:lang',gMeta);
 loadApps=function(){
   const code=location.pathname.split('/')[2]||'';
   return fetch('/api/g/'+encodeURIComponent(code),{cache:'no-store'}).then(function(r){
@@ -38,21 +61,7 @@ loadApps=function(){
   }).then(function(j){
     APPS=(j.apps||[]).filter(function(a){return a&&a.id&&a.url});
     window.APKURL=j.apk||{};   /* yalnız davetliye verilen, kısa ömürlü APK indirme adresleri */
-    const w=document.getElementById('welcome');
-    if(w&&j.note){
-      w.innerHTML='<span class="g-note-ic">'+svg(G_IC_MAIL,30)+'</span>'
-        +'<div class="g-note-bd"><span class="g-note-lb">SANA ÖZEL MESAJ</span><p class="g-note-tx">'+esc(j.note)+'</p>'
-        +'<span class="g-note-by">'+svg(G_IC_USER,14)+'Nexus tarafından gönderildi</span></div>'
-        +'<span class="g-note-ok">'+svg(G_IC_OK,14)+'Özel</span>';
-      w.classList.remove('off');
-    }
-    const sub=document.getElementById('gSub');
-    if(sub)sub.textContent=APPS.length>1?'Nexus tarafından seninle özel olarak paylaşılan uygulamalar.':'Nexus tarafından seninle özel olarak paylaşılan uygulama.';
-    const ch=document.getElementById('gChips');
-    if(ch){
-      ch.innerHTML=(j.exp?gChip(G_IC_CLOCK,gLeft(j.exp)):gChip(G_IC_INF,'Süresiz erişim'))
-        +(j.max===1||(!j.max&&j.once)?gChip(G_IC_ONCE,'Tek kullanımlık · sayfayı yenileme')
-          :j.max>1?gChip(G_IC_ONCE,(j.left>0?j.left+' hak kaldı':'Son hak')+' · yenileme hak harcar'):'');
-    }
+    G_RES=j;
+    gMeta();
   });
 };

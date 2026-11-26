@@ -21,6 +21,10 @@
   --warn:#8f5a0b;
   --danger:#c0432f;
   --scrim:rgba(16,19,24,.4);
+  --flag-red:#e30a17;
+  --flag-blue:#012169;
+  --flag-cross:#c8102e;
+  --flag-white:#ffffff;
   --glow-a:rgba(13,125,112,.12);
   --glow-b:rgba(63,91,216,.08);
   --shadow:rgba(20,30,40,.14);
@@ -701,7 +705,7 @@ body.g .sec-list{gap:12px}
 body.g .app{min-height:84px;padding:12px 14px 12px 12px;border-color:transparent;border-radius:20px;background:var(--surface);background:color-mix(in srgb,var(--surface) 86%,transparent);box-shadow:0 12px 30px -16px var(--shadow),inset 0 0 0 1px var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 body.g .app-ic{width:56px;height:56px;border-radius:16px;box-shadow:0 8px 20px -8px var(--glow-a)}
 body.g .app-nm{font-size:17px}
-body.g .app-ds{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+body.g .app-ds{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .app-cta{flex:none;display:inline-flex;align-items:center;padding:9px 16px;margin-left:4px;border-radius:999px;background:linear-gradient(120deg,var(--accent),var(--accent-2));color:var(--accent-ink);font-size:14px;font-weight:700;pointer-events:none}
 @media (hover:hover){body.g .app:hover{transform:translateY(-2px)}}
 
@@ -728,6 +732,26 @@ body.stp{display:grid;place-items:center;padding:24px}
 .st-card .adm-in{margin:20px 0 12px;text-align:center}
 .st-card.shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* ---------- Dil seçimi: üst çubukta bayrak düğmesi + açılır menü ---------- */
+.top{position:relative;z-index:20}
+body.pub .top{z-index:20}
+.lang{position:relative;display:flex;margin-right:-8px}
+.lang-flag{display:block;flex:none;width:24px;height:17px;overflow:hidden;border-radius:5px;box-shadow:0 0 0 1px var(--line),0 3px 8px -3px var(--shadow)}
+.lang-flag svg{display:block;width:100%;height:100%}
+.fl-red{fill:var(--flag-red)}
+.fl-blue{fill:var(--flag-blue)}
+.fl-white{fill:var(--flag-white)}
+.fl-sw{stroke:var(--flag-white);fill:none}
+.fl-sr{stroke:var(--flag-cross);fill:none}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:168px;padding:6px;border:1px solid var(--line);border-radius:var(--r-l);background:var(--surface);box-shadow:0 18px 40px -14px var(--shadow);opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity var(--dur) ease,transform var(--dur) var(--ease),visibility 0s linear var(--dur)}
+.lang-menu.open{opacity:1;visibility:visible;transform:none;transition:opacity var(--dur) ease,transform var(--dur) var(--ease),visibility 0s}
+.lang-it{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;border-radius:var(--r-m);background:transparent;color:var(--text);font:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer}
+.lang-it span:nth-child(2){flex:1}
+.lang-it svg.lang-ck{color:var(--accent);visibility:hidden}
+.lang-it[aria-checked="true"]{background:var(--surface-2)}
+.lang-it[aria-checked="true"] svg.lang-ck{visibility:visible}
+@media (hover:hover){.lang-it:hover{background:var(--surface-2)}}
 
 /* ---------- 7) Hareket azaltma ---------- */
 @media (prefers-reduced-motion:reduce){

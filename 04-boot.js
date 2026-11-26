@@ -70,6 +70,18 @@
 
   window.addEventListener('hashchange',route);
 
+  /* Dil değişti: panel baştan kurulur; ana sayfa ve davet sayfası yeniden istek atmadan çizilir */
+  window.addEventListener('nx:lang',function(){
+    if(PANEL){setTimeout(function(){location.reload()},160);return}   /* menünün geri girdisi (geri.js) önce temizlensin */
+    closeSheet();
+    nxHide();
+    bindLive();
+    if(!ready)return;
+    renderApps();
+    liveApply(document);
+    updNet();
+  });
+
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape')closeSheet();
   });

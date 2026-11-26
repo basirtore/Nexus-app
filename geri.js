@@ -9,6 +9,7 @@
   function isOpen(s){var e=$(s);return !!e&&e.classList.contains('open')}
   /* Üstten alta: geri ilk açık olanı kapatır; close() katmanın kendi düğmesine/arka planına basar */
   var LAYERS=[
+    {open:function(){return isOpen('#langMenu')},close:function(){if(window.nxLangClose)nxLangClose()}},
     {open:function(){return isOpen('#cf')},close:function(){click($('#cf .cf-bg'))}},
     {open:function(){return isOpen('#sheet')},close:function(){click($('#sheet .sheet-bg'))}},
     {open:function(){return isOpen('#drawer')},close:function(){click($('#drawer .drawer-bg'))}}

@@ -25,17 +25,17 @@ function sic(p){return svg(p,18,'stp-ic')}
 const STEPS={
   ios:[
     'Siteyi <b>Safari</b>\'de aç.',
-    'Alttaki <b>Paylaş</b> '+sic(IC_SHARE)+' düğmesine dokun.',
+    'Alttaki <b>Paylaş</b> {share} düğmesine dokun.',
     '<b>Ana Ekrana Ekle</b>\'yi seç, sonra <b>Ekle</b>\'ye dokun.'
   ],
   android:[
     'Siteyi <b>Chrome</b>\'da aç.',
-    'Sağ üstteki <b>Menü</b> '+sic(IC_DOTS)+' düğmesine dokun.',
+    'Sağ üstteki <b>Menü</b> {menu} düğmesine dokun.',
     '<b>Ana ekrana ekle</b> (ya da <b>Uygulamayı yükle</b>) seçeneğine dokun.'
   ],
   desktop:[
     'Siteyi <b>Chrome</b> veya <b>Edge</b>\'de aç.',
-    'Adres çubuğunun sağındaki <b>Yükle</b> '+sic(IC_INST)+' simgesine tıkla.',
+    'Adres çubuğunun sağındaki <b>Yükle</b> {inst} simgesine tıkla.',
     '<b>Yükle</b>\'yi onayla.'
   ]
 };
@@ -47,26 +47,26 @@ function renderSheet(){
   const a=sheetApp;
   if(!a)return;
   const tabs=PLATS.map(function(p){
-    return '<button class="seg-b" type="button" data-act="pl" data-pl="'+p.id+'" aria-pressed="'+(p.id===sheetPl)+'">'+p.label+'</button>';
+    return '<button class="seg-b" type="button" data-act="pl" data-pl="'+p.id+'" aria-pressed="'+(p.id===sheetPl)+'">'+T(p.label)+'</button>';
   }).join('');
-  const steps=STEPS[sheetPl].map(function(s){return '<li><span>'+s+'</span></li>'}).join('');
+  const steps=STEPS[sheetPl].map(function(s){return '<li><span>'+T(s,{share:sic(IC_SHARE),menu:sic(IC_DOTS),inst:sic(IC_INST)})+'</span></li>'}).join('');
   /* Android ve bilgisayarda siteyi ?install=1 ile aç: uygulama kendi "Uygulamayı yükle" şeridini gösterir (iPhone'da böyle bir yol yok) */
   const oneTap=sheetPl!=='ios';
   let goUrl=a.url;
   if(oneTap){try{const u=new URL(a.url);u.searchParams.set('install','1');goUrl=u.href}catch(e){}}
-  const go='<a class="btn btn-pri sh-go" href="'+esc(goUrl)+'" target="_blank" rel="noopener" data-act="go">'+(oneTap?'Aç ve yükle':'Siteyi aç')+'</a>';
+  const go='<a class="btn btn-pri sh-go" href="'+esc(goUrl)+'" target="_blank" rel="noopener" data-act="go">'+T(oneTap?'Aç ve yükle':'Siteyi aç')+'</a>';
   const apkUrl=(sheetPl==='android'&&window.APKURL&&window.APKURL[a.id])||''; /* yalnız davet sayfasında dolar */
-  const apk=apkUrl?'<a class="btn btn-sec sh-apk" href="'+esc(apkUrl)+'" rel="noopener" download>APK indir (Android)</a>'
-    +'<p class="sh-note">APK, uygulamanın internetsiz açılan sürümüdür. İndirince Android <b>bilinmeyen kaynaklardan yükleme</b> izni isteyebilir, <b>İzin ver</b> de.</p>':'';
+  const apk=apkUrl?'<a class="btn btn-sec sh-apk" href="'+esc(apkUrl)+'" rel="noopener" download>'+T('APK indir (Android)')+'</a>'
+    +'<p class="sh-note">'+T('APK, uygulamanın internetsiz açılan sürümüdür. İndirince Android <b>bilinmeyen kaynaklardan yükleme</b> izni isteyebilir, <b>İzin ver</b> de.')+'</p>':'';
   $('#sheetBody').innerHTML=''
     +'<div class="sh-hd">'
     +  '<img class="app-ic sm" src="'+esc(sheetIcon(a))+'" alt="" width="48" height="48">'
-    +  '<div class="sh-tt"><h2 id="shTitle" class="sh-title">'+esc(a.name)+'</h2><p class="sh-sub">Ana ekrana ekle</p></div>'
-    +  '<button class="ib" type="button" data-act="close" aria-label="Kapat">'+svg(IC_X,22)+'</button>'
+    +  '<div class="sh-tt"><h2 id="shTitle" class="sh-title">'+esc(a.name)+'</h2><p class="sh-sub">'+T('Ana ekrana ekle')+'</p></div>'
+    +  '<button class="ib" type="button" data-act="close" aria-label="'+T('Kapat')+'">'+svg(IC_X,22)+'</button>'
     +'</div>'
-    +'<div class="seg" role="group" aria-label="Cihaz türü">'+tabs+'</div>'
+    +'<div class="seg" role="group" aria-label="'+T('Cihaz türü')+'">'+tabs+'</div>'
     +'<ol class="steps">'+steps+'</ol>'
-    +'<p class="sh-note">'+(oneTap?'<b>Aç ve yükle</b> siteyi açar; üstte çıkan <b>Yükle</b> kartına dokunman yeter. Kart çıkmazsa yukarıdaki adımları izle. ':'')+'Ekledikten sonra uygulama ana ekranından tam ekran açılır.</p>'
+    +'<p class="sh-note">'+(oneTap?T('<b>Aç ve yükle</b> siteyi açar; üstte çıkan <b>Yükle</b> kartına dokunman yeter. Kart çıkmazsa yukarıdaki adımları izle.')+' ':'')+T('Ekledikten sonra uygulama ana ekranından tam ekran açılır.')+'</p>'
     +'<div class="sh-ac">'+go+apk+'</div>';
 }
 
@@ -133,15 +133,15 @@ function nxShow(){
   if(nxBar||!nxCanInstall())return;
   const ev=window.__nxIP;
   const ios=platform()==='ios';
-  const sub=ev?'Ana ekrana ekle, tam ekran çalışır'
+  const sub=T(ev?'Ana ekrana ekle, tam ekran çalışır'
     :ios?'Safari\'de Paylaş ▸ Ana Ekrana Ekle'
-    :'Tarayıcı menüsünden Ana ekrana ekle\'yi seç';
+    :'Tarayıcı menüsünden Ana ekrana ekle\'yi seç');
   const bar=document.createElement('div');
-  bar.className='nxi';bar.setAttribute('role','region');bar.setAttribute('aria-label','Nexus\'u yükle');
+  bar.className='nxi';bar.setAttribute('role','region');bar.setAttribute('aria-label',T('Nexus\'u yükle'));
   bar.innerHTML='<img class="nxi-ic" src="icons/icon-192.png" alt="" width="46" height="46">'
     +'<div class="nxi-tx"><b>Nexus</b><span>'+esc(sub)+'</span></div>'
-    +'<button class="nxi-go" type="button" data-snd="none">'+(ev?'Yükle':'Tamam')+'</button>'
-    +'<button class="nxi-x" type="button" data-snd="none" aria-label="Kapat">'+svg(IC_X,16)+'</button>';
+    +'<button class="nxi-go" type="button" data-snd="none">'+T(ev?'Yükle':'Tamam')+'</button>'
+    +'<button class="nxi-x" type="button" data-snd="none" aria-label="'+T('Kapat')+'">'+svg(IC_X,16)+'</button>';
   bar.querySelector('.nxi-go').onclick=function(){
     const e=window.__nxIP;
     nxHide();

@@ -32,7 +32,7 @@ function themeGet(){
 function themeName(){
   const id=themeGet();
   const o=THEMES.find(function(x){return x.id===id});
-  return o?o.t:'Gece';
+  return T(o?o.t:'Gece');
 }
 function themeApply(id){
   const h=document.documentElement;
@@ -94,22 +94,22 @@ document.addEventListener('click',function(e){
 },true);
 
 /* ---------- Tarih ---------- */
-const MON=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
 function fmtDT(ts){
   const d=new Date(ts);
-  return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()+' · '+hhmm(ts);
+  return d.getDate()+' '+monName(d.getMonth())+' '+d.getFullYear()+' · '+hhmm(ts);
 }
 function fmtShort(ts){
   const d=new Date(ts);
-  return d.getDate()+' '+MON[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():'')+' · '+hhmm(ts);
+  return d.getDate()+' '+monName(d.getMonth())+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():'')+' · '+hhmm(ts);
 }
 function ago(ts){
   const m=Math.round((Date.now()-ts)/60000);
-  if(m<1)return 'az önce';
-  if(m<60)return m+' dk önce';
+  if(m<1)return T('az önce');
+  if(m<60)return T('{n} dk önce',{n:m});
   const h=Math.round(m/60);
-  if(h<48)return h+' sa önce';
-  return Math.round(h/24)+' gün önce';
+  if(h<48)return T('{n} sa önce',{n:h});
+  return T('{n} gün önce',{n:Math.round(h/24)});
 }
 
 /* ---------- Son push (GitHub'dan en son commit zamanı) ---------- */
@@ -131,12 +131,12 @@ function ghPush(){
 /* el'e son push yazar. long=true: tam tarih + "3 sa önce"; false: kısa */
 function pushInto(el,long){
   if(!el)return;
-  if(!GH_REPO){el.textContent=long?'GitHub deposu tanımlı değil':'';return}
+  if(!GH_REPO){el.textContent=long?T('GitHub deposu tanımlı değil'):'';return}
   ghPush().then(function(t){
-    if(!t){el.textContent=long?'Alınamadı':'';return}
+    if(!t){el.textContent=long?T('Alınamadı'):'';return}
     el.innerHTML=long
       ?esc(fmtDT(t))+' <small class="sep">'+esc(ago(t))+'</small>'
-      :'Son push '+esc(fmtShort(t));
+      :T('Son push {t}',{t:esc(fmtShort(t))});
   });
 }
 
@@ -159,14 +159,14 @@ function settingsHTML(w){
     const sw=o.id==='auto'
       ?'<span class="tm-sw tm-auto"><i data-theme="light"></i><i data-theme="dark"></i></span>'
       :'<span class="tm-sw" data-theme="'+o.id+'"></span>';
-    return '<button class="tm" type="button" data-act="theme" data-t="'+o.id+'" aria-pressed="'+(o.id===cur)+'">'+sw+'<span>'+o.t+'</span></button>';
+    return '<button class="tm" type="button" data-act="theme" data-t="'+o.id+'" aria-pressed="'+(o.id===cur)+'">'+sw+'<span>'+T(o.t)+'</span></button>';
   }).join('');
   return ''
-    +'<div class="sh-hd"><div class="sh-tt"><h2 id="shTitle" class="sh-title">'+(w==='theme'?'Tema':w==='snd'?'Tıklama sesi':'Görünüm ve ses')+'</h2><p class="sh-sub">Bu cihazda saklanır</p></div>'
-    +'<button class="ib" type="button" data-act="close" aria-label="Kapat">'+svg(IC_X,22)+'</button></div>'
-    +(th?(w?'':'<div class="set-h" role="presentation">TEMA</div>')+'<div class="tm-grid" role="group" aria-label="Tema">'+tm+'</div>':'')
-    +(sd?(w?'':'<div class="set-h" role="presentation">SES</div>')
-    +'<label class="sw-row"><span class="sw-tx">Tıklama sesi<small>Düğmelerde ve bildirimlerde kısa ses</small></span>'
+    +'<div class="sh-hd"><div class="sh-tt"><h2 id="shTitle" class="sh-title">'+T(w==='theme'?'Tema':w==='snd'?'Tıklama sesi':'Görünüm ve ses')+'</h2><p class="sh-sub">'+T('Bu cihazda saklanır')+'</p></div>'
+    +'<button class="ib" type="button" data-act="close" aria-label="'+T('Kapat')+'">'+svg(IC_X,22)+'</button></div>'
+    +(th?(w?'':'<div class="set-h" role="presentation">'+T('TEMA')+'</div>')+'<div class="tm-grid" role="group" aria-label="'+T('Tema')+'">'+tm+'</div>':'')
+    +(sd?(w?'':'<div class="set-h" role="presentation">'+T('SES')+'</div>')
+    +'<label class="sw-row"><span class="sw-tx">'+T('Tıklama sesi')+'<small>'+T('Düğmelerde ve bildirimlerde kısa ses')+'</small></span>'
     +'<input class="sw" type="checkbox" name="snd"'+(S.snd!==false?' checked':'')+'></label>':'');
 }
 function openSettings(w){
@@ -175,7 +175,7 @@ function openSettings(w){
 }
 function bindLive(){
   $$('[data-bind="theme"]').forEach(function(el){el.textContent=themeName()});
-  $$('[data-bind="snd"]').forEach(function(el){el.textContent=S.snd===false?'Kapalı':'Açık'});
+  $$('[data-bind="snd"]').forEach(function(el){el.textContent=T(S.snd===false?'Kapalı':'Açık')});
 }
 
 document.addEventListener('click',function(e){

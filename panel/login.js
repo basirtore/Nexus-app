@@ -44,13 +44,13 @@
     var show=k.type==='password';
     k.type=show?'text':'password';
     eye.setAttribute('aria-pressed',show?'true':'false');
-    eye.setAttribute('aria-label',show?'Anahtarı gizle':'Anahtarı göster');
+    eye.setAttribute('aria-label',T(show?'Anahtarı gizle':'Anahtarı göster'));
   });
 
   f.addEventListener('submit',function(ev){
     ev.preventDefault();
     if(busy)return;
-    if(!k.value){fail('Anahtarı gir');k.focus();return}
+    if(!k.value){fail(T('Anahtarı gir'));k.focus();return}
     busy=true;e.textContent='';
     b.disabled=true;b.classList.add('is-load');b.setAttribute('aria-busy','true');
     unlock();
@@ -62,8 +62,8 @@
         document.body.classList.add('lg-end');
         c.classList.remove('shake');c.classList.add('out');
         setTimeout(function(){location.replace('/panel/')},450);
-      }else{idle();fail(x.j.e||'Hata')}
+      }else{idle();fail(Ts(x.j.e||'Hata'))}
     })
-    .catch(function(){idle();fail('Bağlantı hatası')});
+    .catch(function(){idle();fail(T('Bağlantı hatası'))});
   });
 })();

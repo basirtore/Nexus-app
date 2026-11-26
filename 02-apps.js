@@ -38,16 +38,16 @@ const IC_DOWN='<path d="M6 9l6 6 6-6"/>';
 /* Satır kart: ad bağlantısı ::after ile tüm satırı kaplar ("Aç"), kurulum düğmesi üstte kalır */
 function appCard(a){
   const arch=a.sec==='arch';
-  const badge=(a.badge&&!arch)?'<span class="badge">'+esc(a.badge)+'</span>':'';
-  const add=arch?'':'<button class="ib app-add" type="button" data-act="install" data-id="'+esc(a.id)+'" aria-label="'+esc(a.name)+' nasıl yüklenir">'+svg(IC_ADD,22)+'</button>';
+  const badge=(a.badge&&!arch)?'<span class="badge">'+esc(T(a.badge))+'</span>':'';
+  const add=arch?'':'<button class="ib app-add" type="button" data-act="install" data-id="'+esc(a.id)+'" aria-label="'+esc(T('{name} nasıl yüklenir',{name:a.name}))+'">'+svg(IC_ADD,22)+'</button>';
   return ''
   +'<article class="app'+(arch?' arch':'')+'" data-id="'+esc(a.id)+'">'
   +  '<img class="app-ic" src="'+esc(localIcon(a))+'" alt="" width="48" height="48" data-ic="'+esc(a.id)+'">'
   +  '<div class="app-bd">'
   +    '<h3 class="app-nm"><a class="app-open" href="'+esc(a.url)+'" target="_blank" rel="noopener" data-act="open">'+esc(a.name)+'</a>'+badge+'</h3>'
-  +    '<p class="app-ds">'+esc(a.desc)+'</p>'
+  +    '<p class="app-ds">'+esc(T(a.desc))+'</p>'
   +  '</div>'
-  +  '<div class="app-ac">'+add+'<span class="app-cta">Aç</span>'+'</div>'
+  +  '<div class="app-ac">'+add+'<span class="app-cta">'+T('Aç')+'</span>'+'</div>'
   +'</article>';
 }
 
@@ -65,9 +65,9 @@ function pHero(mode){
     ?'<div class="g-logo-wrap pub-logo"><svg class="pub-orbit" viewBox="0 0 320 160" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><g transform="rotate(-14 160 80)"><ellipse cx="160" cy="80" rx="150" ry="46"/>'+pDot()+'</g></svg><img class="g-logo" src="icons/icon-512.png" alt="" width="112" height="112"></div>'
     :'';
   const sub=mode==='full'
-    ?'Uygulamalar henüz yayında değil;<br>hazır oldukça burada görünecek.'
-    :'İşte senin için sunulan uygulamalar.';
-  return logo+'<h1 class="g-h pub-h">Nexus\'a <em>hoş geldin.</em></h1><p class="g-sub pub-sub">'+sub+'</p>';
+    ?T('Uygulamalar henüz yayında değil;<br>hazır oldukça burada görünecek.')
+    :T('İşte senin için sunulan uygulamalar.');
+  return logo+'<h1 class="g-h pub-h">'+T('Nexus\'a <em>hoş geldin.</em>')+'</h1><p class="g-sub pub-sub">'+sub+'</p>';
 }
 function pRender(){
   const hero=$('#pubHero');
@@ -77,14 +77,14 @@ function pRender(){
   const box=$('#v-apps');
   if(!n){
     box.innerHTML=APPS_FAIL
-      ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bağlantı sorunu</b><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p></div><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>Bilgilendirme</b><p>'+'Birkaç gün sonra tekrar uğrayabilirsin.'+'</p></div></div>';
+      ?'<div class="pub-info pub-err"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>'+T('Bağlantı sorunu')+'</b><p>'+T('Uygulama listesi alınamadı. Bağlantını kontrol et.')+'</p></div><button class="btn btn-pri" type="button" data-act="retry">'+T('Tekrar dene')+'</button></div>'
+      :'<div class="pub-info"><span class="pub-info-ic">'+svg(P_IC_INFO,26)+'</span><div class="pub-info-bd"><b>'+T('Bilgilendirme')+'</b><p>'+T('Birkaç gün sonra tekrar uğrayabilirsin.')+'</p></div></div>';
     return;
   }
-  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+'Public Uygulamalar'+'</h2><span class="g-cnt">'+n+' Uygulama</span></div>';
+  const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+T('Public Uygulamalar')+'</h2><span class="g-cnt">'+T('{n} Uygulama',{n:n})+'</span></div>';
   const cards=list.map(function(a){
     const sc=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
-    const tag=a.badge&&a.sec!=='arch'?a.badge:sc.title;
+    const tag=T(a.badge&&a.sec!=='arch'?a.badge:sc.title);
     return appCard(Object.assign({},a,{badge:''})).replace('</p></div>','</p><span class="g-tag">'+svg(sc.ic,13)+esc(tag)+'</span></div>');
   }).join('');
   box.innerHTML='<section class="sec">'+hd+'<div class="sec-list">'+cards+'</div></section>';
@@ -99,15 +99,15 @@ function renderApps(){
     const n=APPS.length,t=$('#helloTx');
     hi.classList.toggle('off',APPS_FAIL);
     if(t)t.innerHTML=n===0
-      ?'Nexus\'a hoş geldin. Uygulamalar henüz yayında değil; hazır oldukça burada görünecek. Birkaç gün sonra tekrar uğrayabilirsin.'
+      ?T('Nexus\'a hoş geldin. Uygulamalar henüz yayında değil; hazır oldukça burada görünecek. Birkaç gün sonra tekrar uğrayabilirsin.')
       :n===1
-        ?'Şu an yayında tek bir uygulama var. Beğenirsen <b>Yükle</b> ile ana ekranına ekle, <b>Aç</b> ile hemen dene. Yenileri geldikçe burada olacak.'
-        :n+' uygulama burada, tek yerde. Beğendiğini <b>Yükle</b> ile ana ekranına ekleyebilir, <b>Aç</b> ile hemen deneyebilirsin.';
+        ?T('Şu an yayında tek bir uygulama var. Beğenirsen <b>Yükle</b> ile ana ekranına ekle, <b>Aç</b> ile hemen dene. Yenileri geldikçe burada olacak.')
+        :T('{n} uygulama burada, tek yerde. Beğendiğini <b>Yükle</b> ile ana ekranına ekleyebilir, <b>Aç</b> ile hemen deneyebilirsin.',{n:n});
   }
   if(!APPS.length){
     box.innerHTML=APPS_FAIL
-      ?'<div class="empty"><p>Uygulama listesi alınamadı. Bağlantını kontrol et.</p><button class="btn btn-pri" type="button" data-act="retry">Tekrar dene</button></div>'
-      :hi?'':'<div class="empty"><p>Henüz uygulama yok.</p></div>';
+      ?'<div class="empty"><p>'+T('Uygulama listesi alınamadı. Bağlantını kontrol et.')+'</p><button class="btn btn-pri" type="button" data-act="retry">'+T('Tekrar dene')+'</button></div>'
+      :hi?'':'<div class="empty"><p>'+T('Henüz uygulama yok.')+'</p></div>';
     return;
   }
   if(window.NEXUS_GUEST&&typeof gRender==='function'){box.innerHTML=gRender();return}   /* davet sayfası: tek liste (guest.js) */
@@ -117,8 +117,8 @@ function renderApps(){
     const arch=s.id==='arch';
     const hd=''
     +'<span class="sec-ic">'+svg(s.ic,16)+'</span>'
-    +'<h2 class="sec-t">'+esc(s.title)+'</h2>'
-    +'<span class="sec-n" aria-label="'+list.length+' uygulama">'+list.length+'</span>'
+    +'<h2 class="sec-t">'+esc(T(s.title))+'</h2>'
+    +'<span class="sec-n" aria-label="'+T('{n} uygulama',{n:list.length})+'">'+list.length+'</span>'
     +(arch?'<span class="sec-chev">'+svg(IC_DOWN,16)+'</span>':'');
     const cards='<div class="sec-list">'+list.map(appCard).join('')+'</div>';
     /* Arşiv katlanır, varsayılan kapalı */
@@ -135,23 +135,23 @@ function updNet(ok){
   el.className='inf-st';
   if(!navigator.onLine){
     el.classList.add('st-off');
-    el.textContent='Çevrimdışı · kayıtlı simgeler gösteriliyor';
+    el.textContent=T('Çevrimdışı · kayıtlı simgeler gösteriliyor');
     return;
   }
   if(typeof ok!=='number'){
-    if(S.last){el.classList.add('st-on');el.textContent='Son yenileme '+hhmm(S.last)}
-    else{el.textContent='Henüz yenilenmedi'}
+    if(S.last){el.classList.add('st-on');el.textContent=T('Son yenileme {t}',{t:hhmm(S.last)})}
+    else{el.textContent=T('Henüz yenilenmedi')}
     return;
   }
   if(ok===APPS.length){
     el.classList.add('st-on');
-    el.textContent='Hepsi güncel · '+hhmm(S.last);
+    el.textContent=T('Hepsi güncel · {t}',{t:hhmm(S.last)});
   }else if(ok>0){
     el.classList.add('st-part');
-    el.textContent=ok+'/'+APPS.length+' simge canlı, kalanı kayıtlı';
+    el.textContent=T('{ok}/{n} simge canlı, kalanı kayıtlı',{ok:ok,n:APPS.length});
   }else{
     el.classList.add('st-part');
-    el.textContent='Canlı simge alınamadı · kayıtlı simgeler gösteriliyor';
+    el.textContent=T('Canlı simge alınamadı · kayıtlı simgeler gösteriliyor');
   }
 }
 
