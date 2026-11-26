@@ -2,21 +2,41 @@
 /* ============================================================
    01-core.js · sabitler, bölümler (SECS), uygulama listesi (APPS),
    durum (S), yardımcılar
+   (SECS = kategoriler)
    Yeni uygulama: kod gerekmez; Cloudflare'de Worker açılınca panel > Uygulamalar'dan işaretlenir
-   Yeni bölüm: SECS'e satır (başka bir şey gerekmez)
+   Yeni kategori: panel > Uygulamalar > Kategoriler (kod gerekmez)
    ============================================================ */
 
 const KEY='nexus.v1';
 
-/* Bölümler (ekranda bu sırayla). ic = 24x24 çizgi simge içeriği (sabit, güvenilir) */
-const SECS=[
-  {id:'life',title:'Yaşam ve Sağlık',
-   ic:'<path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12c-2.5 4.6-9.5 9-9.5 9z"/>'},
-  {id:'trade',title:'Trader Araçları',
-   ic:'<path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/>'},
-  {id:'arch',title:'Arşiv',
-   ic:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>'}
+/* Kategori simgeleri: 24x24 çizgi içeriği (sabit, güvenilir). Sunucu yalnız anahtarı saklar (worker.js SECICS ile aynı liste) */
+const SEC_ICS={
+  heart:'<path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12c-2.5 4.6-9.5 9-9.5 9z"/>',
+  chart:'<path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/>',
+  archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
+  game:'<rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4M15.5 11.5h.01M17.5 13.5h.01"/>',
+  chess:'<circle cx="12" cy="6.5" r="3"/><path d="M9 11h6M10.3 11c0 3-1.3 5-3.3 7h10c-2-2-3.3-4-3.3-7M6 21h12"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 1h14v-3"/>',
+  tool:'<path d="M14.5 6.5a4 4 0 0 0 5 5L11 20a2.1 2.1 0 0 1-3-3l8.5-8.5"/><path d="M14.5 6.5a4 4 0 0 1 5-3l-2.5 2.5 1 2 2 1 2.5-2.5a4 4 0 0 1-3.5 5"/>',
+  money:'<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M7 12h.01M17 12h.01"/>',
+  star:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
+};
+/* Kategoriler (ekranda bu sırayla). Panelden eklenir/düzenlenir; liste sunucudan gelir, bu üçü yalnız yedek.
+   'arch' kimlikli kategori arşiv gibi davranır. */
+const SECDEF=[
+  {id:'life',title:'Yaşam ve Sağlık',en:'',ic:'heart'},
+  {id:'trade',title:'Trader Araçları',en:'',ic:'chart'},
+  {id:'arch',title:'Arşiv',en:'',ic:'archive'}
 ];
+let SECS=[];
+function setSecs(list){
+  const l=(Array.isArray(list)?list:[]).filter(function(s){return s&&s.id&&s.title});
+  SECS=(l.length?l:SECDEF).map(function(s){return {id:s.id,title:s.title,en:s.en||'',ic:SEC_ICS[s.ic]||SEC_ICS.grid}});
+}
+setSecs();
+/* Ekrandaki ad: İngilizcede girilmiş İngilizce ad; yoksa çeviri tablosu, o da yoksa yazıldığı gibi */
+function secTitle(s){return nxLang()==='en'&&s.en?s.en:T(s.title)}
 
 /* Ana sayfada liste /api/public'ten (panelde işaretlenen herkese açıklar) yüklenir;
    panelde /api/apps'ten (Nexus'ta görünmesi işaretli tüm uygulamalar; yalnız giriş yapmış yönetici). Alanlar:
@@ -37,11 +57,13 @@ function loadApps(){
   /* Ana sayfa: yalnız panelde "herkese açık" işaretlenenler (/api/public). Gizliler hiç gelmez. */
   if(!PANEL){
     return get('/api/public').then(function(r){
+      setSecs(r&&r.secs);
       APPS=((r&&r.apps)||[]).filter(function(a){return a&&a.id&&a.url&&a.public!==false});
     });
   }
   /* Panel: Nexus'ta görünenlerin hepsi; a.pub = herkese açık mı (sunucu işaretler) */
   return get('/api/apps').then(function(r){
+    setSecs(r&&r.secs);
     APPS=((r&&r.apps)||[]).filter(function(a){return a&&a.id&&a.url});
   });
 }

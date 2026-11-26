@@ -7,6 +7,7 @@ Kullanıcı Türkçe yazar, telefondan okur, dosyaları telefondan GitHub'a yük
 
 ## 0. Açık işler
 
+- **Kategoriler panelden yönetiliyor (2026-11-26, v1.0.37):** Uygulamalar ekranında "Kategoriler" çipleri (ekle/düzenle/sil, en çok 20), uygulama düzenlemede kategori seçimi + "Yeni kategori". KV `apps.secs` = `[{id,title,en,ic}]` (yoksa `SECDEF`); simge anahtarları `worker.js` `SECICS` = `01-core.js` `SEC_ICS`. `/api/public` ve `/api/g` yalnız kullanılan kategorileri verir. `arch` kimliği arşiv davranışını korur. `SECS` artık sunucudan dolar (`setSecs`, `secTitle`). Worker yeniden dağıtılmalı. Sahte KV/API ile denendi; telefonda ve gerçek Cloudflare'de denenmedi.
 - **Dil desteği TR/EN (2026-11-26, v1.0.36):** üst çubukta tema düğmesinin yanında bayrak düğmesi (ana sayfa, davet, panel; giriş sayfası seçili dili kullanır). Yeni `i18n.js`: `T('Türkçe metin',{n})`, `Ts` (sunucu mesajları), `EN` tablosu, menü. **Yeni her ekran metni `T()` ile yazılır ve `EN`'e eklenir.** Dil `nexus.lang` + `nxl` çerezi (Worker durum sayfaları). Davet sayfası dil değişince istek atmadan çizilir; panel yeniden yüklenir (kaydedilmemiş iş varsa sorar). `switcher.js`, `manifest.json` ve panelde yazılan özel ad/açıklama/not çevrilmez. Playwright 390px + sahte API ile denendi; telefonda ve gerçek Cloudflare'de denenmedi.
 - **Geri tuşu / geri kaydırma (2026-11-26, `geri.js`, `switcher.js`, `sw.js` CORE)**: Yükle/Ayarlar sayfası, panel menüsü ve onay penceresi açıkken geri önce katmanı kapatır (her katman bir history girdisi alır, başka yoldan kapanınca girdi geri alınır); `switcher.js` paneli de aynı şekilde. Katman yokken davranış değişmedi. Yalnız söz dizimi denendi; **telefonda DOĞRULANMADI**. Yeni katman eklenirse `geri.js` içindeki `LAYERS` listesine eklenmeli.
 - **v1.0.31:** VitaFlow Life ve VitaFlow Health logoları yenilendi: `icons/apps/life.png` ve `health.png` artık `vitaflow-life` / `vitaflow-health` repolarındaki güncel `icons/icon-192.png` (ikisi de 192×192). Çevrimdışı simgeler bu dosyalardan gelir. Passkey planı iptal edildi. `sw.js` v1.0.31. Sahte/gerçek tarayıcıda denenmedi; yalnızca dosya doğrulaması yapıldı.
@@ -80,7 +81,7 @@ Kullanıcı Türkçe yazar, telefondan okur, dosyaları telefondan GitHub'a yük
 | Kullanıcı şunu istiyor | Ana dosya(lar) | Sık eşlik eden |
 |---|---|---|
 | Yeni uygulama ekle / ad, açıklama, bölüm, rozet değiştir | Panelde Uygulamalar ekranı (kod gerekmez); ilk değerler `worker.js` `SEED` | icons/apps/<id>.png yalnız eski 5 için |
-| Bölüm adı, simgesi, sırası; yeni bölüm | 01-core.js (`SECS`: id, title, ic) | — (renk sınıfı yok) |
+| Bölüm adı, simgesi, sırası; yeni bölüm | Panelde Uygulamalar > Kategoriler (kod gerekmez) | yeni simge: 01-core.js `SEC_ICS` + worker.js `SECICS` |
 | Bölüm/kart yerleşimi, düğmeler | 02-apps.js (`renderApps`, `appCard`) | style.css (`.sec*`, `.app*`, `.btn*`) |
 | Simge canlı çekme / kayıtlı simge davranışı | 02-apps.js (`loadLive`, `liveIconUrl`, `updNet`) | 01-core.js (`S`, `save`) |
 | Simge yolu değişti (ör. `?v=3`) | 01-core.js (`APPS[].icon`) | — |
@@ -181,6 +182,7 @@ Nexus: `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-ico
 Yeni dosya/sayfa → bölüm 2, 3, 4 · yeni fonksiyon → ilgili dosya satırı · fonksiyon taşındı → eski/yeni dosya satırı + bölüm 3 · yeni tuzak → bölüm 5. Her güncellemede bölüm 7'ye tek satır. Değişen dosyaların boyutunu yeniden ölç, bölüm 4 başlıklarını güncelle. Bölüm 0'da biten maddeyi sil, yenisini ekle.
 
 ## 7. Değişiklik günlüğü (en yeni üstte)
+- 2026-11-26 · v1.0.37: panelden kategori ekleme/düzenleme/silme.
 - 2026-11-26 · v1.0.36: Türkçe/İngilizce dil desteği (`i18n.js`, bayrak menüsü, `worker.js` durum sayfaları); kart açıklamasında 2 satırı aşan metnin etikete taşması düzeltildi.
 - 2026-11-24 · v1.0.34: EdgeFlow ve Jurnalist çevrimdışı logoları yenilendi (`icons/apps/edgeflow.png`, `jurnalist.png`; yeni final ikon setinin 192 px sürümü).
 - 2026-11-24 · v1.0.33: APK indirme yalnız davetlilere: açık Release adresi koddan kaldırıldı. `worker.js` `/apk/<id>?t=<bilet>`: bilet `guestApi` yanıtında (`apk`) 2 saatlik HMAC (`ADMIN_KEY`) olarak verilir (tek kullanımlık linkte sayfa yüklenince link kapansa da indirme çalışsın diye linke değil bilete bağlı); Worker APK'yı özel `VitaFlow-Life` reposunun `apk-latest` Release'inden Secret `GH_APK_TOKEN` ile çekip akıtır. `wrangler.jsonc` `/apk/*` Worker'dan geçer. `guest.js` `window.APKURL`, `03-install.js` düğmeyi buna göre çizer; ana sayfada düğme çıkmaz. Telefonda ve Cloudflare'de denenmedi.

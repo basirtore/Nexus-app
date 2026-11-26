@@ -26,7 +26,7 @@ function gRender(){
     +'<span class="g-cnt">'+T('{n} Uygulama',{n:n})+'</span></div>';
   const cards=APPS.map(function(a){
     const s=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
-    return appCard(a).replace('</p></div>','</p><span class="g-tag">'+svg(s.ic,13)+esc(T(s.title))+'</span></div>');
+    return appCard(a).replace('</p></div>','</p><span class="g-tag">'+svg(s.ic,13)+esc(secTitle(s))+'</span></div>');
   }).join('');
   return '<section class="sec">'+hd+'<div class="sec-list">'+cards+'</div></section>';
 }
@@ -59,6 +59,7 @@ loadApps=function(){
     if(!r.ok)throw new Error('davet '+r.status);
     return r.json();
   }).then(function(j){
+    setSecs(j.secs);
     APPS=(j.apps||[]).filter(function(a){return a&&a.id&&a.url});
     window.APKURL=j.apk||{};   /* yalnız davetliye verilen, kısa ömürlü APK indirme adresleri */
     G_RES=j;

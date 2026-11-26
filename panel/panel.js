@@ -111,10 +111,16 @@
   }
   /* ---------- Uygulamalar: Cloudflare Worker listesi + düzenleme ---------- */
   let wk=[],wkOrig=[],wkSnap={},wkLoaded=false,wkBar=null,wkSaving=false;
-  const SECN=[['life',T('Yaşam ve Sağlık')],['trade',T('Trader Araçları')],['arch',T('Arşiv')]];
+  /* Kategoriler: wkSecs = ekrandaki taslak; uygulamalarla birlikte Kaydet'te gönderilir */
+  const SECMAX=20;
+  let wkSecs=[],wkSecSnap='[]';
+  const secRaw=function(l){return l.map(function(s){return {id:s.id,title:s.title,en:s.en||'',ic:s.ic||'grid'}})};
+  const secChanged=function(){return JSON.stringify(wkSecs)!==wkSecSnap};
+  const secOf=function(id){return wkSecs.filter(function(s){return s.id===id})[0]||wkSecs[0]};
+  const secSvg=function(s,n){return svg(SEC_ICS[s.ic]||SEC_ICS.grid,n)};
   const IC_EDIT='<path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>';
   function barFlag(){document.documentElement.classList.toggle('has-bar',$$('.savebar.show').length>0)}
-  const pick=function(it){return {w:it.w,show:!!it.show,name:it.name||'',desc:it.desc||'',sec:it.sec||'life',badge:it.badge||''}};
+  const pick=function(it){return {w:it.w,show:!!it.show,name:it.name||'',desc:it.desc||'',sec:it.sec||'',badge:it.badge||''}};
   const clone=function(o){return JSON.parse(JSON.stringify(o))};
   function hue(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))%360;return h}
   /* Worker simgeleri: uygulamanın kendi sitesinden denenir (ana ekrandaki gibi, en az 64x64 ise kullanılır); olmazsa harf kutusu kalır */
@@ -136,7 +142,7 @@
   /* i verilirse kart sırayla belirir (ilk çizim); verilmezse sessizce yenilenir */
   function wkRow(it,i){
     const w=esc(it.w),nm=it.name||it.w;
-    const sec=(SECN.filter(function(s){return s[0]===it.sec})[0]||SECN[0])[1];
+    const s=secOf(it.sec),sec=s?secTitle(s):'';
     const chips=(it.isNew?'<i class="badge badge-new">'+T('Yeni')+'</i>':'')+(it.self?'<i class="badge">'+T('Bu Nexus')+'</i>':'')
       +(it.miss?'<i class="badge badge-priv">'+T('Cloudflare\'de yok')+'</i>':'')+(it.badge?'<i class="badge">'+esc(T(it.badge))+'</i>':'');
     return '<div class="wk-card'+(it.show?'':' dim')+(i!=null?' rise':'')+'" data-w="'+w+'"'+(i!=null?' style="animation-delay:'+Math.min(i,10)*35+'ms"':'')+'>'
@@ -151,6 +157,65 @@
   }
   function wkCollect(){return wk.map(pick)}
   function wkChanged(){return wkCollect().filter(function(x){return JSON.stringify(x)!==wkSnap[x.w]})}
+  function wkDirty(){return wkChanged().length+(secChanged()?1:0)}
+  function secRender(){
+    const el=$('#wkSecs');
+    if(!el)return;
+    el.innerHTML=wkSecs.map(function(s){
+      const n=wk.filter(function(x){return x.sec===s.id}).length;
+      return '<button class="pp-chip ct-chip" type="button" data-sec-edit="'+esc(s.id)+'">'+secSvg(s,18)+'<span>'+esc(secTitle(s))+'</span><b>'+n+'</b></button>';
+    }).join('')+(wkSecs.length&&wkSecs.length<SECMAX?'<button class="pp-chip ct-chip ct-add" type="button" data-sec-edit="">+ '+T('Yeni kategori')+'</button>':'');
+  }
+  /* Kategori penceresi: id boşsa yeni. done(id) verilirse pencere kapanmak yerine ona döner */
+  function secEdit(id,done){
+    const old=wkSecs.filter(function(s){return s.id===id})[0];
+    if(!old&&wkSecs.length>=SECMAX){toast(T('En çok {n} kategori eklenebilir',{n:SECMAX}),'err');return}
+    let ic=old?old.ic:'grid';
+    const ics=Object.keys(SEC_ICS).map(function(k){return '<button class="ct-ic" type="button" data-ct-ic="'+k+'" aria-label="'+k+'" aria-pressed="'+(k===ic)+'">'+svg(SEC_ICS[k],22)+'</button>'}).join('');
+    popSheet(ppHead(T(old?'Kategoriyi düzenle':'Yeni kategori'),T('Değişiklik Kaydet\'e basınca uygulanır.'))
+      +'<div class="pp-form">'
+      +'<label class="inv-lb">'+T('Ad')+'<input class="inv-in" id="ctN" type="text" maxlength="24" value="'+esc(old?old.title:'')+'"></label>'
+      +'<label class="inv-lb">'+T('İngilizce adı (isteğe bağlı)')+'<input class="inv-in" id="ctE" type="text" maxlength="24" value="'+esc(old?old.en:'')+'"></label>'
+      +'<div class="inv-lb">'+T('Simge')+'<div class="ct-ics" role="group" aria-label="'+T('Simge')+'">'+ics+'</div></div>'
+      +'</div>'
+      +(old&&wkSecs.length>1?'<button class="btn btn-sec lk-del wk-rm" type="button" id="ctDel">'+T('Kategoriyi sil')+'</button>':'')
+      +'<div class="sh-ac"><button class="btn btn-pri sh-go" type="button" id="ctOk">'+T('Tamam')+'</button></div>',
+    function(b){
+      $('.ct-ics',b).addEventListener('click',function(e){
+        const t=e.target.closest('[data-ct-ic]');
+        if(!t)return;
+        ic=t.dataset.ctIc;
+        $$('.ct-ic',b).forEach(function(x){x.setAttribute('aria-pressed',x===t?'true':'false')});
+      });
+      $('#ctOk',b).addEventListener('click',function(){
+        const title=$('#ctN',b).value.trim(),en=$('#ctE',b).value.trim();
+        if(!title){toast(T('Ad boş olamaz'),'err');$('#ctN',b).focus();return}
+        const low=function(t){return t.toLocaleLowerCase('tr')};
+        if(wkSecs.some(function(s){return s!==old&&(low(s.title)===low(title)||low(secTitle(s))===low(title))})){toast(T('Bu ad zaten var'),'err');return}
+        let nid=id;
+        if(old){old.title=title;old.en=en;old.ic=ic}
+        else{
+          nid='c'+Date.now().toString(36);
+          const at=wkSecs.map(function(s){return s.id}).indexOf('arch');   /* yeni kategori Arşiv'in üstüne girer */
+          wkSecs.splice(at<0?wkSecs.length:at,0,{id:nid,title:title,en:en,ic:ic});
+        }
+        if(done)done(nid);else closeSheet();
+        wkRender();
+        vib(12);
+      });
+      const rm=$('#ctDel',b);
+      if(rm)rm.addEventListener('click',function(){
+        const to=wkSecs.filter(function(s){return s.id!==id})[0];
+        ask({t:T('Kategori silinsin mi?'),d:T('"{name}" silinir. İçindeki uygulamalar "{to}" kategorisine taşınır.',{name:secTitle(old),to:secTitle(to)}),bad:1}).then(function(y){
+          if(!y)return;
+          wkSecs=wkSecs.filter(function(s){return s.id!==id});
+          wk.forEach(function(x){if(x.sec===id)x.sec=to.id});
+          closeSheet();
+          wkRender();
+        });
+      });
+    });
+  }
   function wkSum(){
     const e=$('#wkSum');
     if(!e)return;
@@ -161,17 +226,19 @@
     if(!wkBar)return;
     const ch=wkChanged();
     $$('.wk-card',box).forEach(function(r){r.classList.toggle('chg',ch.some(function(x){return x.w===r.dataset.w}))});
-    const show=cur==='uyg'&&ch.length>0;
+    const total=wkDirty();
+    const show=cur==='uyg'&&total>0;
     wkBar.classList.toggle('show',show);
     wkBar.inert=!show;
     barFlag();
-    if(ch.length)$('#wkTx').innerHTML=T('{n} değişiklik',{n:ch.length})+'<small>'+T('Henüz kaydedilmedi')+'</small>';
+    if(total)$('#wkTx').innerHTML=T('{n} değişiklik',{n:total})+'<small>'+T('Henüz kaydedilmedi')+'</small>';
     wkSum();
+    secRender();
   }
   function wkRender(){
     const el=$('#wkList');
     if(!el)return;
-    el.innerHTML=wk.length?wk.map(wkRow).join(''):'<p class="inf-note">'+T('Worker bulunamadı.')+'</p>';
+    el.innerHTML=wk.length?wk.map(function(x){return wkRow(x)}).join(''):'<p class="inf-note">'+T('Worker bulunamadı.')+'</p>';
     wkSnap={};
     wkOrig.forEach(function(x){wkSnap[x.w]=JSON.stringify(pick(x))});
     wkSync();
@@ -189,6 +256,8 @@
     api('GET','workers').then(function(j){
       wk=j.items||[];
       wkOrig=clone(wk);
+      wkSecs=secRaw(j.secs&&j.secs.length?j.secs:SECDEF);
+      wkSecSnap=JSON.stringify(wkSecs);
       const n=wk.filter(function(x){return x.isNew}).length;
       $('#wkMsg').innerHTML=(j.err?'<p class="wk-err">'+T('Cloudflare\'e ulaşılamadı: {e}',{e:esc(Ts(j.err))})+'<br>'+T('Son bilinen liste gösteriliyor.')+'</p>':'')
         +(n?'<p class="sec-note">'+T('{n} yeni Worker var.',{n:n})+'</p>':'');
@@ -204,25 +273,28 @@
     wkSaving=true;
     btn.disabled=true;
     btn.textContent=T('Kaydediliyor…');
-    api('POST','apps',{items:wkCollect(),seen:wk.map(function(x){return x.w})}).then(function(j){
+    api('POST','apps',{secs:wkSecs,items:wkCollect(),seen:wk.map(function(x){return x.w})}).then(function(j){
       if(!j.ok){toast(Ts(j.e||'Kaydedilemedi'),'err');return}
       try{sessionStorage.setItem('nx.msg','1')}catch(e){}
       location.reload();   /* APPS ve diğer görünümler yeni listeyle yeniden kurulur */
     }).catch(function(){toast(T('Kaydedilemedi'),'err',T('Bağlantını kontrol et'))})
       .then(function(){wkSaving=false;btn.disabled=false;btn.textContent=T('Kaydet')});
   }
-  /* Düzenleme penceresi: ad, açıklama, bölüm (seçim kutusu yok, üç düğme), rozet */
-  function wkEdit(w){
+  /* Düzenleme penceresi: ad, açıklama, kategori (çipler + yeni kategori), rozet.
+     d = yeni kategori penceresinden dönerken korunan taslak */
+  function wkEdit(w,d){
     const it=wk.find(function(x){return x.w===w});
     if(!it)return;
-    let sec=it.sec||'life';
-    const segs=SECN.map(function(s){return '<button class="seg-b" type="button" data-sec="'+s[0]+'" aria-pressed="'+(sec===s[0])+'">'+esc(s[1])+'</button>'}).join('');
+    d=d||{name:it.name,desc:it.desc,badge:it.badge,sec:it.sec};
+    let sec=(secOf(d.sec)||{}).id;
+    const segs=wkSecs.map(function(s){return '<button class="pp-chip ct-chip" type="button" data-sec="'+esc(s.id)+'" aria-pressed="'+(sec===s.id)+'">'+secSvg(s,18)+'<span>'+esc(secTitle(s))+'</span></button>'}).join('')
+      +(wkSecs.length<SECMAX?'<button class="pp-chip ct-chip ct-add" type="button" id="edNew">+ '+T('Yeni kategori')+'</button>':'');
     popSheet(ppHead(esc(it.name||it.w),esc(it.w))
       +'<div class="pp-form">'
-      +'<label class="inv-lb">'+T('Ad')+'<input class="inv-in" id="edN" type="text" maxlength="40" placeholder="'+esc(it.w)+'" value="'+esc(it.name)+'"></label>'
-      +'<label class="inv-lb">'+T('Açıklama')+'<input class="inv-in" id="edD" type="text" maxlength="140" value="'+esc(it.desc)+'"></label>'
-      +'<div class="inv-lb">'+T('Bölüm')+'<div class="seg seg-w" id="edS" role="group" aria-label="'+T('Bölüm')+'">'+segs+'</div></div>'
-      +'<label class="inv-lb">'+T('Rozet')+'<input class="inv-in" id="edB" type="text" maxlength="16" value="'+esc(it.badge)+'"></label>'
+      +'<label class="inv-lb">'+T('Ad')+'<input class="inv-in" id="edN" type="text" maxlength="40" placeholder="'+esc(it.w)+'" value="'+esc(d.name)+'"></label>'
+      +'<label class="inv-lb">'+T('Açıklama')+'<input class="inv-in" id="edD" type="text" maxlength="140" value="'+esc(d.desc)+'"></label>'
+      +'<div class="inv-lb">'+T('Kategori')+'<div class="pp-chips" id="edS" role="group" aria-label="'+T('Kategori')+'">'+segs+'</div></div>'
+      +'<label class="inv-lb">'+T('Rozet')+'<input class="inv-in" id="edB" type="text" maxlength="16" value="'+esc(d.badge)+'"></label>'
       +'</div>'
       +(it.miss?'<p class="sh-note">'+T('Bu Worker Cloudflare\'de bulunamadı (silinmiş olabilir). Nexus\'taki kaydını silebilirsin.')+'</p>'
         +'<button class="btn btn-sec lk-del wk-rm" type="button" id="edDel">'+T('Listeden sil')+'</button>':'')
@@ -230,7 +302,7 @@
     function(b){
       const rm=$('#edDel',b);
       if(rm)rm.addEventListener('click',function(){
-        ask({t:T('Listeden silinsin mi?'),d:T('"{name}" Nexus listesinden silinir.',{name:it.name||w})+(wkChanged().length?' '+T('Kaydedilmemiş diğer değişiklikler de gider.'):''),bad:1}).then(function(y){
+        ask({t:T('Listeden silinsin mi?'),d:T('"{name}" Nexus listesinden silinir.',{name:it.name||w})+(wkDirty()?' '+T('Kaydedilmemiş diğer değişiklikler de gider.'):''),bad:1}).then(function(y){
           if(!y)return;
           rm.disabled=true;
           api('POST','apps',{items:[],del:[w]}).then(function(j){
@@ -245,7 +317,12 @@
         const t=e.target.closest('[data-sec]');
         if(!t)return;
         sec=t.dataset.sec;
-        $$('#edS .seg-b',b).forEach(function(x){x.setAttribute('aria-pressed',x===t?'true':'false')});
+        $$('#edS [data-sec]',b).forEach(function(x){x.setAttribute('aria-pressed',x===t?'true':'false')});
+      });
+      const nw=$('#edNew',b);
+      if(nw)nw.addEventListener('click',function(){
+        const keep={name:$('#edN',b).value,desc:$('#edD',b).value,badge:$('#edB',b).value,sec:sec};
+        secEdit('',function(nid){keep.sec=nid;wkEdit(w,keep)});
       });
       $('#edOk',b).addEventListener('click',function(){
         it.name=$('#edN',b).value.trim();
@@ -272,7 +349,7 @@
       const t=e.target.closest('[data-wk]');
       if(!t)return;
       if(t.dataset.wk==='save')wkSave();
-      else{wk=clone(wkOrig);wkRender();toast(T('Değişiklikler geri alındı'));vib(12)}
+      else{wk=clone(wkOrig);wkSecs=JSON.parse(wkSecSnap);wkRender();toast(T('Değişiklikler geri alındı'));vib(12)}
     });
     box.addEventListener('change',function(e){
       const t=e.target,card=t&&t.closest?t.closest('.wk-card'):null;
@@ -283,7 +360,9 @@
     });
     box.addEventListener('click',function(e){
       const t=e.target.closest('[data-wk-edit]');
-      if(t){vib(10);wkEdit(t.dataset.wkEdit)}
+      if(t){vib(10);wkEdit(t.dataset.wkEdit);return}
+      const c=e.target.closest('[data-sec-edit]');
+      if(c){vib(10);secEdit(c.dataset.secEdit)}
     });
     try{if(sessionStorage.getItem('nx.msg')){sessionStorage.removeItem('nx.msg');setTimeout(function(){toast(T('Kaydedildi'),'ok',T('Liste güncellendi'))},400)}}catch(e){}
   }
@@ -461,7 +540,7 @@
   /* Dil değişince panel yeniden yüklenir: kaydedilmemiş iş varsa önce sor */
   window.nxLangGuard=function(){
     const sv=$('#pbSave'),n=$('#admN');
-    const dirty=wkChanged().length||(sv&&!sv.disabled)||(n&&n.value.trim());
+    const dirty=wkDirty()||(sv&&!sv.disabled)||(n&&n.value.trim());
     return dirty?ask({t:T('Dil değiştirilsin mi?'),d:T('Sayfa yenilenir; kaydedilmemiş değişiklikler gider.'),bad:1}):Promise.resolve(true);
   };
 
@@ -497,8 +576,10 @@
   box.innerHTML=''
   +'<section class="sec" data-v="uyg">'+hd(IC_APPS,T('Uygulamalar'))
   +'<div class="wk-sum"><div id="wkSum"></div><button class="btn btn-sec" type="button" data-adm="wk">'+T('Yenile')+'</button></div>'
-  +'<p class="sec-note">'+T('Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, bölüm ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.')+'</p>'
-  +'<div id="wkMsg"></div><div class="wk-list" id="wkList"></div></section>'
+  +'<p class="sec-note">'+T('Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, kategori ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.')+'</p>'
+  +'<div id="wkMsg"></div>'
+  +sh(IC_LAYERS,T('Kategoriler'))+'<div class="pp-chips" id="wkSecs"></div>'
+  +sh(IC_APPS,T('Uygulamalar'))+'<div class="wk-list" id="wkList"></div></section>'
   +'<section class="sec" data-v="acik">'
   +hero(T('Public Mod'),IC_GLOBE,T('Uygulamalarını <em>Herkese Aç</em>'),T('Seçtiğin uygulamaları herkese açık hale getir, link ile paylaşılabilir yap.'),ART_GLOBE)
   +note(T('Herkese açık yaptığın uygulamalar, herkes tarafından erişilebilir olacaktır. Kapalılar yalnız davet linkiyle verilir.'))
@@ -843,7 +924,7 @@
       list().then(function(ok){if(ok)toast(T('Linkler güncellendi'),'ok')}).then(function(){t.classList.remove('spin');t.disabled=false});
     }
     else if(a==='wk'){
-      if(!wkChanged().length){wkLoad(true);return}
+      if(!wkDirty()){wkLoad(true);return}
       ask({t:T('Değişiklikler silinsin mi?'),d:T('Kaydedilmemiş değişiklikler listeyi yenileyince gider.'),bad:1}).then(function(y){if(y)wkLoad(true)});
     }
   });

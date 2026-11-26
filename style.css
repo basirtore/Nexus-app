@@ -797,7 +797,14 @@ body.pub .top{z-index:20}
 .pp-num:focus{outline:none}
 .pp-form{display:grid;gap:16px}
 .pp-form .inv-in{width:100%;min-width:0}
-.seg-w .seg-b{min-height:52px;padding:4px 6px;font-size:13px;line-height:1.2}
+.ct-chip{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:0 14px}
+.ct-chip svg{flex:none;color:var(--accent)}
+.ct-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-chip b{color:var(--mute);font-size:13px}
+.ct-add{border-style:dashed;color:var(--accent)}
+.ct-ics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ct-ic{display:grid;place-items:center;min-height:48px;border:1.5px solid var(--line);border-radius:var(--r-m);background:var(--surface);color:var(--text);cursor:pointer}
+.ct-ic[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2);color:var(--accent)}
 
 /* Davet formu */
 .nv{display:grid;gap:22px;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 18px 40px -26px var(--shadow)}

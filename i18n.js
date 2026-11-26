@@ -108,15 +108,22 @@
     'Cloudflare\'e ulaşılamadı: {e}':'Could not reach Cloudflare: {e}','Son bilinen liste gösteriliyor.':'Showing the last known list.',
     '{n} yeni Worker var.':'{n} new {n|Worker|Workers}.','Kaydediliyor…':'Saving…','Kaydedilemedi':'Could not save',
     'Kaydet':'Save','Kaydedildi':'Saved','Liste güncellendi':'List updated','Geri al':'Undo',
-    'Ad':'Name','Açıklama':'Description','Bölüm':'Section','Rozet':'Badge',
+    'Ad':'Name','Açıklama':'Description','Rozet':'Badge',
     'Bu Worker Cloudflare\'de bulunamadı (silinmiş olabilir). Nexus\'taki kaydını silebilirsin.':'This Worker was not found on Cloudflare (it may have been deleted). You can remove its Nexus entry.',
     'Listeden sil':'Remove from list','Listeden silinsin mi?':'Remove from the list?',
     '"{name}" Nexus listesinden silinir.':'"{name}" will be removed from the Nexus list.',
     'Kaydedilmemiş diğer değişiklikler de gider.':'Other unsaved changes will be lost too.',
     'Silinemedi':'Could not delete','Silinmedi':'Not deleted','Worker Cloudflare\'de hâlâ görünüyor':'The Worker still exists on Cloudflare',
     'Kaydedilmemiş değişiklikler':'Unsaved changes','Değişiklikler geri alındı':'Changes undone','Yenile':'Refresh',
-    'Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, bölüm ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.':'Workers in your Cloudflare account. The ones you switch on appear on Nexus; use the pencil icon to edit name, description, section and badge. Changes apply when you press Save.',
+    'Cloudflare hesabındaki Worker\'lar. Anahtarı açtıkların Nexus\'ta görünür; kalem simgesiyle ad, açıklama, kategori ve rozeti düzenlersin. Değişiklikler Kaydet\'e basınca uygulanır.':'Workers in your Cloudflare account. The ones you switch on appear on Nexus; use the pencil icon to edit name, description, category and badge. Changes apply when you press Save.',
     'Değişiklikler silinsin mi?':'Discard changes?','Kaydedilmemiş değişiklikler listeyi yenileyince gider.':'Refreshing the list discards unsaved changes.',
+    /* Panel: kategoriler */
+    'Kategoriler':'Categories','Kategori':'Category','Yeni kategori':'New category','Kategoriyi düzenle':'Edit category',
+    'İngilizce adı (isteğe bağlı)':'English name (optional)','Simge':'Icon','Ad boş olamaz':'Name cannot be empty',
+    'Bu ad zaten var':'This name already exists','En çok {n} kategori eklenebilir':'Up to {n} categories can be added',
+    'Kategoriyi sil':'Delete category','Kategori silinsin mi?':'Delete category?',
+    '"{name}" silinir. İçindeki uygulamalar "{to}" kategorisine taşınır.':'"{name}" will be deleted. Its apps move to "{to}".',
+    'Değişiklik Kaydet\'e basınca uygulanır.':'Changes apply when you press Save.',
     /* Panel: herkese açık */
     'Public Mod':'Public Mode','Uygulamalarını <em>Herkese Aç</em>':'Make your apps <em>Public</em>',
     'Seçtiğin uygulamaları herkese açık hale getir, link ile paylaşılabilir yap.':'Make the apps you choose public and shareable by link.',
@@ -252,6 +259,7 @@
 
   window.T=T;
   window.Ts=Ts;
+  window.nxLang=function(){return lang};
   window.monName=function(i){return MON[lang][i]};
   window.nxLangClose=function(){toggle(false)};
 

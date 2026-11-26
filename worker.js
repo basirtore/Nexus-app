@@ -55,7 +55,31 @@ async function isAdmin(req,env){
    KV 'apps' = {v,a:[{id,w,show,name,desc,sec,badge,icon,loc}],seen:[workerAdı]|null}
    KV 'cfl'  = {at,sub,names}: Cloudflare'den son bilinen liste (yalnız değişince yazılır; KV yazmayı azaltır)
    Adres = https://<worker>.<alt alan adı>.workers.dev/ ; alt alan adı API'den gelir (repoda yok). */
-const SECOK=['life','trade','arch'];
+/* Kategoriler: KV 'apps' > secs = [{id,title,en,ic}] (panelden düzenlenir); yoksa bu üçü */
+const SECDEF=[
+  {id:'life',title:'Yaşam ve Sağlık',en:'',ic:'heart'},
+  {id:'trade',title:'Trader Araçları',en:'',ic:'chart'},
+  {id:'arch',title:'Arşiv',en:'',ic:'archive'}
+];
+const SECICS=['heart','chart','archive','game','chess','book','tool','money','star','grid']; /* 01-core.js SEC_ICS ile aynı */
+const SECID=/^[a-z0-9-]{1,24}$/;
+const SECMAX=20;
+function cleanSecs(a){
+  const out=[];
+  for(const s of (Array.isArray(a)?a:[])){
+    if(!s||!SECID.test(s.id||'')||out.some(x=>x.id===s.id))continue;
+    const title=String(s.title||'').trim().slice(0,24);
+    if(!title)continue;
+    out.push({id:s.id,title,en:String(s.en||'').trim().slice(0,24),ic:SECICS.includes(s.ic)?s.ic:'grid'});
+    if(out.length>=SECMAX)break;
+  }
+  return out;
+}
+function secsOf(cfg){const l=cleanSecs(cfg.secs);return l.length?l:SECDEF}
+/* Silinmiş/bilinmeyen kategori → ilk kategori */
+const secId=(secs,id)=>secs.some(s=>s.id===id)?id:secs[0].id;
+/* Dışarıya yalnız listelenen uygulamaların kategorileri verilir (gizli kategori adı sızmasın) */
+const usedSecs=(secs,apps)=>secs.filter(s=>apps.some(a=>a.sec===s.id));
 const NM=/^[A-Za-z0-9][A-Za-z0-9_-]{0,62}$/;
 /* İlk açılış tohumu: eski panel/private.json değerleri (id'ler davet linkleri ve 'pub' için aynı kalır) */
 const SEED=[
@@ -113,7 +137,7 @@ async function getSub(env){
   }catch(e){}
   return '';
 }
-const toApp=(e,sub)=>({id:e.id,sec:SECOK.includes(e.sec)?e.sec:'life',name:e.name||e.w,
+const toApp=(e,sub,secs)=>({id:e.id,sec:secId(secs,e.sec),name:e.name||e.w,
   url:'https://'+e.w+'.'+sub+'.workers.dev/',icon:e.icon||'icons/icon-192.png',desc:e.desc||'',
   ...(e.badge?{badge:e.badge}:{}),...(e.loc?{}:{iconLocal:'icons/icon-192.png'})});
 /* Nexus'ta görünmesi işaretli uygulamalar (adresli); alt alan adı yoksa hata */
@@ -123,7 +147,8 @@ async function appList(env){
   if(!list.length)return [];
   const sub=await getSub(env);
   if(!sub)throw new Error('sub');
-  return list.map(e=>toApp(e,sub));
+  const secs=secsOf(cfg);
+  return list.map(e=>toApp(e,sub,secs));
 }
 const appFull=appList;
 /* Herkese açık liste: KV 'pub' = [id,...]; panelde işaretlenir (POST /api/public) */
@@ -211,38 +236,42 @@ async function api(req,env,u,p){
     return J({ok:1});
   }
   if(p==='/api/apps'&&m==='GET'){
-    const [all,ids]=await Promise.all([appList(env),pubIds(env)]);
-    return J({apps:all.map(a=>({...a,pub:ids.includes(a.id)}))});
+    const [all,ids,cfg]=await Promise.all([appList(env),pubIds(env),cfgGet(env)]);
+    return J({apps:all.map(a=>({...a,pub:ids.includes(a.id)})),secs:secsOf(cfg)});
   }
   if(p==='/api/workers'&&m==='GET'){
     const cfg=await cfgGet(env),old=await cfCache(env);
     let c=old,err='';
     try{c=await cfRefresh(env,old)}catch(e){err=e&&e.message||'Cloudflare\'e ulaşılamadı'}
     if(!err&&cfg.seen==null){cfg.seen=c.names.slice();await env.LINKS.put('apps',JSON.stringify(cfg))} /* ilk açılış: mevcutlar "yeni" sayılmaz */
-    const ids=await pubIds(env),seen=cfg.seen||[],self=u.hostname.split('.')[0];
+    const ids=await pubIds(env),secs=secsOf(cfg),seen=cfg.seen||[],self=u.hostname.split('.')[0];
     const by={};cfg.a.forEach(e=>{by[e.w]=e});
     const items=[...new Set([...c.names,...cfg.a.map(e=>e.w)])].map(w=>{
       const e=by[w];
-      return {w,show:!!(e&&e.show),name:e&&e.name||'',desc:e&&e.desc||'',sec:e&&SECOK.includes(e.sec)?e.sec:'life',badge:e&&e.badge||'',
+      return {w,show:!!(e&&e.show),name:e&&e.name||'',desc:e&&e.desc||'',sec:secId(secs,e&&e.sec),badge:e&&e.badge||'',
         pub:!!(e&&ids.includes(e.id)),isNew:!e&&!seen.includes(w),miss:!err&&!c.names.includes(w),self:w===self,
         url:c.sub&&c.names.includes(w)?'https://'+w+'.'+c.sub+'.workers.dev/':'',icon:e&&e.icon||'icons/icon-192.png'};
     }).sort((a,b)=>(b.isNew-a.isNew)||(b.show-a.show)||a.w.localeCompare(b.w));
-    return J({items,err,at:c.at});
+    return J({items,secs,err,at:c.at});
   }
   if(p==='/api/apps'&&m==='POST'){
     let b={};try{b=await req.json()}catch(e){}
     const cfg=await cfgGet(env),c=await cfCache(env),before=JSON.stringify(cfg);
     const by={};cfg.a.forEach(e=>{by[e.w]=e});
     const t=(v,n)=>String(v==null?'':v).trim().slice(0,n);
+    /* Kategori listesi gönderildiyse tamamı değişir; silinen kategorideki uygulamalar ilk kategoriye geçer */
+    const ns=cleanSecs(b.secs);
+    if(ns.length){cfg.secs=ns;cfg.a.forEach(e=>{e.sec=secId(ns,e.sec)})}
+    const secs=secsOf(cfg);
     for(const it of (Array.isArray(b.items)?b.items:[]).slice(0,300)){
       if(!it||typeof it.w!=='string'||!NM.test(it.w)||!(c.names.includes(it.w)||by[it.w]))continue;
       let e=by[it.w];
       if(!e){
-        if(!it.show&&!t(it.name,1)&&!t(it.desc,1)&&!t(it.badge,1))continue;
+        if(!it.show&&!t(it.name,1)&&!t(it.desc,1)&&!t(it.badge,1)&&secId(secs,it.sec)===secs[0].id)continue;
         e={id:cfg.a.some(x=>x.id===it.w)?it.w+'-w':it.w,w:it.w,icon:'icons/icon-192.png'};
         cfg.a.push(e);by[it.w]=e;
       }
-      e.show=!!it.show;e.name=t(it.name,40);e.desc=t(it.desc,140);e.badge=t(it.badge,16);e.sec=SECOK.includes(it.sec)?it.sec:'life';
+      e.show=!!it.show;e.name=t(it.name,40);e.desc=t(it.desc,140);e.badge=t(it.badge,16);e.sec=secId(secs,it.sec);
     }
     const sn=(Array.isArray(b.seen)?b.seen:[]).filter(w=>typeof w==='string'&&NM.test(w));
     cfg.seen=[...new Set([...(cfg.seen||[]),...sn])].slice(-300);
@@ -302,7 +331,8 @@ async function getLink(env,code){
 async function publicApi(env,u){
   const ids=await pubIds(env);
   const all=await appFull(env,u.origin);
-  return J({apps:all.filter(a=>ids.includes(a.id)).map(a=>({...a,public:true}))});
+  const apps=all.filter(a=>ids.includes(a.id)).map(a=>({...a,public:true}));
+  return J({apps,secs:usedSecs(secsOf(await cfgGet(env)),apps)});
 }
 const bad=en=>page('Link geçersiz',{ic:ICO.broken,h:'Link geçersiz',p:'Bu link artık çalışmıyor. Gönderen kişiden yenisini isteyebilirsin.',
   why:[[ICO.clock,'Süresi dolmuş olabilir'],[ICO.star,'Tek kullanımlıktı ve açıldı'],[ICO.ban,'Gönderen iptal etmiş olabilir']],btn:['/','Nexus\'a git']},410,en);
@@ -329,7 +359,7 @@ async function guestApi(env,u,p,ctx){
   else{L.hits=hits;L.last=Date.now();ctx.waitUntil(env.LINKS.put('l:'+code,JSON.stringify(L),ttl(L)))}
   const apk={};
   for(const a of apps)if(APK[a.id])apk[a.id]='/apk/'+a.id+'?t='+await mkTok(env,a.id);
-  return J({apk,apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:mx===1,max:mx,left:mx?Math.max(mx-hits,0):0});
+  return J({apk,secs:usedSecs(secsOf(await cfgGet(env)),apps),apps:apps.map(a=>({...a,public:true})),note:L.note||'',exp:L.exp||0,once:mx===1,max:mx,left:mx?Math.max(mx-hits,0):0});
 }
 
 /* ---- APK indirme (yalnız davetliler): APK özel bir repoda durur, Worker kısa ömürlü imzalı biletle kontrol edip akıtır.

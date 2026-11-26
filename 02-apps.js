@@ -84,7 +84,7 @@ function pRender(){
   const hd='<div class="g-sh"><span class="g-sh-ic">'+svg(P_IC_GRID,22)+'</span><h2 class="g-sh-t">'+T('Public Uygulamalar')+'</h2><span class="g-cnt">'+T('{n} Uygulama',{n:n})+'</span></div>';
   const cards=list.map(function(a){
     const sc=SECS.filter(function(x){return x.id===a.sec})[0]||SECS[0];
-    const tag=T(a.badge&&a.sec!=='arch'?a.badge:sc.title);
+    const tag=a.badge&&a.sec!=='arch'?T(a.badge):secTitle(sc);
     return appCard(Object.assign({},a,{badge:''})).replace('</p></div>','</p><span class="g-tag">'+svg(sc.ic,13)+esc(tag)+'</span></div>');
   }).join('');
   box.innerHTML='<section class="sec">'+hd+'<div class="sec-list">'+cards+'</div></section>';
@@ -117,7 +117,7 @@ function renderApps(){
     const arch=s.id==='arch';
     const hd=''
     +'<span class="sec-ic">'+svg(s.ic,16)+'</span>'
-    +'<h2 class="sec-t">'+esc(T(s.title))+'</h2>'
+    +'<h2 class="sec-t">'+esc(secTitle(s))+'</h2>'
     +'<span class="sec-n" aria-label="'+T('{n} uygulama',{n:list.length})+'">'+list.length+'</span>'
     +(arch?'<span class="sec-chev">'+svg(IC_DOWN,16)+'</span>':'');
     const cards='<div class="sec-list">'+list.map(appCard).join('')+'</div>';

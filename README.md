@@ -22,7 +22,7 @@ Sağ üstteki simgeden tema (Otomatik, Açık, Koyu, Gece, Siyah) ve tıklama se
 
 Kod gerekmez. Cloudflare'de Worker açılınca panelde **Uygulamalar** ekranında "Yeni" etiketiyle görünür; Nexus'ta görünsün diye işaretlenir, ad/açıklama/bölüm/rozet oradan düzenlenir. Liste Cloudflare API'den ve KV'den gelir, repoda uygulama adresi tutulmaz.
 
-Yeni bir bölüm için `SECS` listesine satır ekle (id, title, ic).
+Yeni kategori: panelde Uygulamalar ekranı > Kategoriler > "Yeni kategori" (ad, isteğe bağlı İngilizce ad, simge).
 
 ## Sunucu kurulumu (davet linkleri + panel + uygulama listesi)
 1. Cloudflare > Workers & Pages > KV > **Create namespace** (ad: `nexus-links`), id'yi kopyala.
