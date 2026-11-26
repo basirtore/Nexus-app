@@ -56,10 +56,20 @@
     +'<div class="bg"></div><div class="pn" role="menu" aria-label="Uygulamalar"></div></div>';
   var w=root.getElementById('w'),fab=root.querySelector('.fab'),pn=root.querySelector('.pn');
 
+  /* Geri tuşu: panel açıkken geri uygulamadan çıkarmaz, önce paneli kapatır (açılınca bir history girdisi eklenir) */
+  var swPushed=false,swSwallow=false,swT=0;
   function setOpen(o){
     w.classList.toggle('open',o);
     fab.setAttribute('aria-expanded',o?'true':'false');
+    try{
+      if(o&&!swPushed){history.pushState({nxSw:1},'');swPushed=true}
+      else if(!o&&swPushed){swPushed=false;swSwallow=true;clearTimeout(swT);swT=setTimeout(function(){swSwallow=false},800);history.back()}
+    }catch(e){}
   }
+  window.addEventListener('popstate',function(){
+    if(swSwallow){swSwallow=false;return}
+    if(swPushed){swPushed=false;w.classList.remove('open');fab.setAttribute('aria-expanded','false')}
+  });
 
   function render(list){
     var here=location.origin;
